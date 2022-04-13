@@ -4,6 +4,8 @@
  */
 package com.mycompany.negozio;
 
+import java.awt.event.WindowEvent;
+
 /**
  *
  * @author Michael
@@ -71,6 +73,11 @@ public class Nuovo_fornitore extends javax.swing.JFrame {
 
         btn_annulla.setBackground(new java.awt.Color(255, 0, 51));
         btn_annulla.setText("Annulla");
+        btn_annulla.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_annullaActionPerformed(evt);
+            }
+        });
 
         jLabel6.setText("Nazione");
 
@@ -159,7 +166,13 @@ public class Nuovo_fornitore extends javax.swing.JFrame {
         String citta = field_citta.getText();
         String nazione = field_nazione.getText();
         db.nuovo_fornitore(nome,piva,indirizzo,citta,nazione);
+        this.dispose();
     }//GEN-LAST:event_btn_salva_fActionPerformed
+
+    private void btn_annullaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_annullaActionPerformed
+        // TODO add your handling code here:
+        this.dispose();
+    }//GEN-LAST:event_btn_annullaActionPerformed
 
     /**
      * @param args the command line arguments

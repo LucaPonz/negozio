@@ -19,9 +19,8 @@ import java.util.ArrayList;
  * @author luca
  */
 public class DB {
-    static ResultSet rs = null;
-    static Connection connection = null;
-    static Statement stm = null;
+    ResultSet rs = null;
+    Statement stm = null;
     private Connect conObj = new Connect();
     private Connection con = conObj.createConnection();
     
@@ -68,9 +67,9 @@ public class DB {
                 }catch(SQLException e) {
                     e.printStackTrace();
                 } finally {
-                    if (connection != null) {
+                    if (con != null) {
                         try {
-                            connection.close();
+                            con.close();
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
@@ -83,7 +82,7 @@ public class DB {
     public void aggiornaProdotto(){
         String query_agg = "UPDATE prodotto (barcode,nome,quantita,listino";
     }
-     public void nuovo_fornitore(String nome, String piva, String indirizzo, String citta, String nazione){
+    public void nuovo_fornitore(String nome, String piva, String indirizzo, String citta, String nazione){
         String query = "INSERT INTO fornitori SET nome = ?, p_iva = ?, indirizzo = ?, citta = ?, nazione = ?;";
         try{
             PreparedStatement stmt = con.prepareStatement(query);
@@ -100,13 +99,37 @@ public class DB {
         }catch(SQLException e) {
             e.printStackTrace();
         } finally {
-            if (connection != null) {
+            if (con != null) {
                 try {
-                    connection.close();
+                    con.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+     
+    public ResultSet fornitori(){
+        String query = "SELECT * FROM fornitori;";
+        try{
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+        }catch(SQLException e) {
+            e.printStackTrace();
+        }finally {
+            return rs;
+        }
+     }
+    
+    public ResultSet magazzino(){
+        String query = "SELECT * FROM prodotti;";
+        try{
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+        }catch(SQLException e) {
+            e.printStackTrace();
+        }finally {
+            return rs;
         }
      }
 }
