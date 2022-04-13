@@ -24,7 +24,7 @@ public class DB {
     private Connect conObj = new Connect();
     private Connection con = conObj.createConnection();
     
-    public boolean cercaProdotto(String nome){
+    public boolean verifica_Prodotto(String nome){
         boolean verifica = false;
         // Luca 
         //String query = "SELECT id FROM prodotto WHERE nome = ?";
@@ -45,7 +45,7 @@ public class DB {
     
     public void aggiungiProdotto(ArrayList<Prodotto> scontrino) throws SQLException{
         for(Prodotto s : scontrino){
-            if(this.cercaProdotto(s.nome)){
+            if(this.verifica_Prodotto(s.nome)){
             //this.aggiornaProdotto();
             }else{
                 try{
@@ -78,9 +78,34 @@ public class DB {
             }
         }
     }
-    
-    public void aggiornaProdotto(){
-        String query_agg = "UPDATE prodotto (barcode,nome,quantita,listino";
+    public int estrai_qtprodotto(String nome){
+        String query = "SELECT quantita FROM prodotti WHERE nome = ?";
+        int qnt = 0;
+        try{
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, nome);
+            rs = stmt.executeQuery();
+            while(rs.next()){
+                qnt = Integer.parseInt(rs.getString("quantita"));
+            }
+        }catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return qnt;
+    }
+    //Da verificare
+    public void aggiorna_qtprodotto(String nome, int qnt){
+        int qt_magazzino = this.estrai_qtprodotto(nome);
+        int qt_tmp = qt_magazzino - qnt;
+        String query_aggqt = "UPDATE prodotto SET quantita = ? WHERE nome = ?";
+        try{
+            PreparedStatement stmt = con.prepareStatement(query_aggqt);
+            stmt.setInt(1, qnt);
+            stmt.setString(2,nome);
+            
+        }catch(SQLException e) {
+            e.printStackTrace();
+        }
     }
     public void nuovo_fornitore(String nome, String piva, String indirizzo, String citta, String nazione){
         String query = "INSERT INTO fornitori SET nome = ?, p_iva = ?, indirizzo = ?, citta = ?, nazione = ?;";
@@ -132,4 +157,29 @@ public class DB {
             return rs;
         }
      }
+    
+    public ResultSet cerca_prodotto(String nome){
+        //Michael P.
+        String query = "SELECT * FROM prodotti WHERE nome = ?";
+        try{
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, nome);
+            rs = stmt.executeQuery();          
+        }catch(SQLException e){
+        }
+        return rs;
+    }
+    
+    public boolean verifica_qt(int qnt, String nome) throws SQLException{
+        rs = this.cerca_prodotto(nome);
+        boolean flag = true;
+        int num = 0;
+        while(rs.next()){
+            num = Integer.parseInt(rs.getString("quantita"));
+            if(qnt > num){
+                flag = false;
+            }
+        }
+        return flag;
+    }
 }

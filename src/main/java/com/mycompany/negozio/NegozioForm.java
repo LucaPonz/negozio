@@ -12,14 +12,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author luca
  */
 public class NegozioForm extends javax.swing.JFrame {
+
     DefaultTableModel model_s, model_f, model_m, model_v;
     DB db = new DB();
     ArrayList<Prodotto> scontrino = new ArrayList<>();
+
     /**
      * Creates new form NegozioForm
      */
@@ -31,17 +34,19 @@ public class NegozioForm extends javax.swing.JFrame {
         lista_fornitori();
         lista_magazzino();
         vendi_prodotto();
+        estrai_qtprodotto();
     }
-    private void calcolo_totale(){
+
+    private void calcolo_totale() {
         String nome = acquista_prodotto.getText();
         double qnt = Double.parseDouble(acquista_quantita.getText());
         double prezzo = Double.parseDouble(acquista_prezzo.getText());
-        double totale = qnt*prezzo;
+        double totale = qnt * prezzo;
         String tot = "" + totale;
         acquista_totale.setText(tot);
     }
-    
-    private void lista_fornitori() throws SQLException{
+
+    private void lista_fornitori() throws SQLException {
         model_f = (DefaultTableModel) table_fornitori.getModel();
         ResultSet rs = db.fornitori();
         String nome = "", piva = "", indirizzo = "", citta = "", nazione = "";
@@ -51,41 +56,67 @@ public class NegozioForm extends javax.swing.JFrame {
             indirizzo = rs.getString("indirizzo");
             citta = rs.getString("citta");
             nazione = rs.getString("nazione");
-            String riga[]  = {nome,piva,indirizzo,citta,nazione};
+            String riga[] = {nome, piva, indirizzo, citta, nazione};
             model_f.addRow(riga);
         }
     }
-    
-    private void lista_magazzino() throws SQLException{
+
+    private void lista_magazzino() throws SQLException {
         model_m = (DefaultTableModel) table_magazzino.getModel();
         ResultSet rs = db.magazzino();
-        String id= "", nome = "", qnt = "", prezzo = "", barcode = "";
+        String id = "", nome = "", qnt = "", prezzo = "", barcode = "";
         while (rs.next()) {
             id = "" + rs.getInt("id");
             nome = rs.getString("nome");
             qnt = "" + rs.getInt("quantita");
             prezzo = "" + rs.getDouble("prezzo");
             barcode = rs.getString("barcode");
-            String riga[]  = {id,nome,qnt,prezzo,barcode};
+            String riga[] = {id, nome, qnt, prezzo, barcode};
             model_m.addRow(riga);
         }
     }
-    
-    private void vendi_prodotto(){
+
+    private void vendi_prodotto() {
         ResultSet rs = db.magazzino();
-        String nome = "", qnt = "", prezzo = "", totale = "";
-        double tmp =0;
         try {
             while (rs.next()) {
-                vendi_nome_prodotto.addItem(rs.getString("nome") + "(" + rs.getInt("quantita") + ")");
-                tmp = Integer.parseInt(vendi_quantita.getText()) * rs.getDouble("prezzo");
-                totale = "" + tmp;
-                vendi_totale.setText(totale);
+                vendi_nome_prodotto.addItem(rs.getString("nome") + " (" + rs.getInt("quantita") + ")");;
             }
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    private void estrai_qtprodotto() {
+        String nome = vendi_nome_prodotto.getSelectedItem().toString().substring(0, vendi_nome_prodotto.getSelectedItem().toString().indexOf("("));
+        int x = db.estrai_qtprodotto(nome);
+        box_qnt_vendi.removeAllItems();
+        if(x > 0){
+            for (int i = 1; i < x + 1; i++) {
+                box_qnt_vendi.addItem("" + i);
+            }
+        }else{
+            box_qnt_vendi.addItem("" + 0);
+        }
+        
+    }
+
+    private String calcolo_totale_vendi(int qnt) {
+        String x = vendi_nome_prodotto.getSelectedItem().toString().substring(0, vendi_nome_prodotto.getSelectedItem().toString().indexOf("("));
+        ResultSet rs = db.cerca_prodotto(x);
+        String totale = "";
+        double tmp = 0;
+        try {
+            while (rs.next()) {
+                tmp = qnt * rs.getDouble("prezzo");
+                totale = "" + tmp;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return totale;
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -97,7 +128,6 @@ public class NegozioForm extends javax.swing.JFrame {
 
         MainMenu = new javax.swing.JTabbedPane();
         Vendi = new javax.swing.JPanel();
-        vendi_quantita = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -108,6 +138,7 @@ public class NegozioForm extends javax.swing.JFrame {
         vendi_aggiungi = new javax.swing.JButton();
         vendi_storico = new javax.swing.JButton();
         vendi_nome_prodotto = new javax.swing.JComboBox<>();
+        box_qnt_vendi = new javax.swing.JComboBox<>();
         Acquista = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -142,8 +173,6 @@ public class NegozioForm extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        vendi_quantita.setText("0");
-
         jLabel1.setText("Prodotto");
 
         jLabel2.setText("Quantità");
@@ -152,15 +181,20 @@ public class NegozioForm extends javax.swing.JFrame {
 
         table_vendi.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
                 "prodotto", "quantità", "prezzo", "totale"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane2.setViewportView(table_vendi);
 
         vendi_button.setText("Vendi");
@@ -192,6 +226,12 @@ public class NegozioForm extends javax.swing.JFrame {
             }
         });
 
+        box_qnt_vendi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                box_qnt_vendiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout VendiLayout = new javax.swing.GroupLayout(Vendi);
         Vendi.setLayout(VendiLayout);
         VendiLayout.setHorizontalGroup(
@@ -205,12 +245,12 @@ public class NegozioForm extends javax.swing.JFrame {
                             .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(vendi_nome_prodotto, 0, 200, Short.MAX_VALUE)
-                            .addComponent(vendi_quantita)
                             .addComponent(vendi_totale)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
                                 .addComponent(vendi_aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(33, 33, 33)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
+                                .addGap(33, 33, 33))
+                            .addComponent(box_qnt_vendi, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 39, Short.MAX_VALUE)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 397, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(VendiLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -227,22 +267,23 @@ public class NegozioForm extends javax.swing.JFrame {
                 .addGap(13, 13, 13)
                 .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(VendiLayout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(vendi_button))
+                    .addGroup(VendiLayout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(vendi_nome_prodotto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(17, 17, 17)
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(vendi_quantita, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(box_qnt_vendi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(12, 12, 12)
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(vendi_totale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(63, 63, 63)
-                        .addComponent(vendi_aggiungi))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(vendi_button)
+                        .addComponent(vendi_aggiungi)))
                 .addContainerGap(13, Short.MAX_VALUE))
         );
 
@@ -571,14 +612,14 @@ public class NegozioForm extends javax.swing.JFrame {
 
     private void acquista_prezzoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acquista_prezzoActionPerformed
         // TODO add your handling code here:
-        
+
     }//GEN-LAST:event_acquista_prezzoActionPerformed
 
     private void acquista_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acquista_buttonActionPerformed
         // TODO add your handling code here:
         try {
-                db.aggiungiProdotto(scontrino);
-            
+            db.aggiungiProdotto(scontrino);
+
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -609,13 +650,13 @@ public class NegozioForm extends javax.swing.JFrame {
         String barcode = acquista_barcode.getText();
         int qnt = Integer.parseInt(acquista_quantita.getText());
         double prezzo = Double.parseDouble(acquista_prezzo.getText());
-        double totale = Double.parseDouble(acquista_totale.getText());   
+        double totale = Double.parseDouble(acquista_totale.getText());
         scontrino.add(new Prodotto(nome, qnt, prezzo, totale, barcode));
-        model_s.insertRow(model_s.getRowCount(),new Object[]{nome,qnt,prezzo,totale});
+        model_s.insertRow(model_s.getRowCount(), new Object[]{nome, qnt, prezzo, totale});
     }//GEN-LAST:event_acquista_aggiungiActionPerformed
 
     private void acquista_prezzoKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_acquista_prezzoKeyPressed
-        
+
     }//GEN-LAST:event_acquista_prezzoKeyPressed
 
     private void acquista_prezzoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_acquista_prezzoKeyReleased
@@ -663,7 +704,7 @@ public class NegozioForm extends javax.swing.JFrame {
     private void btn_nuovofornitoreComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_btn_nuovofornitoreComponentShown
         // TODO add your handling code here:
     }//GEN-LAST:event_btn_nuovofornitoreComponentShown
-    
+
     //Campo ricerca
     private void forn_cercaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_forn_cercaKeyReleased
         // TODO add your handling code here:
@@ -680,20 +721,75 @@ public class NegozioForm extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_aggActionPerformed
 
     private void vendi_aggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_aggiungiActionPerformed
-        // TODO add your handling code here:model_v = (DefaultTableModel) table_vendi.getModel();
-//        String nome = vendi_nome_prodotto.getText();
-//        int qnt = Integer.parseInt(vendi_quantita.getText());
-//        double prezzo = Double.parseDouble(acquista_prezzo.getText());
-//        double totale = Double.parseDouble(vendi_totale.getText());   
-//        scontrino.add(new Prodotto(nome, qnt, prezzo, totale, barcode));
-//        String riga[]  = {nome,qnt,prezzo,totale};
-//        model_v.addRow(riga);
+        // TODO add your handling code here:
+        model_v = (DefaultTableModel) table_vendi.getModel();
+        boolean flag = true;
+        String nome = vendi_nome_prodotto.getSelectedItem().toString().substring(0, vendi_nome_prodotto.getSelectedItem().toString().indexOf("("));
+        ResultSet rs = db.cerca_prodotto(nome);
+        double prezzo = 0;
+        int qnt = Integer.parseInt(vendi_quantita.getText());
+        try {
+            while (rs.next()) {
+                prezzo = Double.parseDouble(rs.getString("prezzo"));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        double totale = Double.parseDouble(vendi_totale.getText());
+
+        try {
+            flag = db.verifica_qt(Integer.parseInt(vendi_quantita.getText()), nome);
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (flag == false) {
+            try {
+                for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            } catch (ClassNotFoundException ex) {
+                java.util.logging.Logger.getLogger(Allarme.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                java.util.logging.Logger.getLogger(Allarme.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                java.util.logging.Logger.getLogger(Allarme.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+                java.util.logging.Logger.getLogger(Allarme.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+            //</editor-fold>
+
+            /* Create and display the form */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    new Allarme().setVisible(true);
+                }
+            });
+        } else {
+            model_v.insertRow(model_v.getRowCount(), new Object[]{nome, qnt, prezzo, totale});
+        }
+
+
     }//GEN-LAST:event_vendi_aggiungiActionPerformed
 
     private void vendi_nome_prodottoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_nome_prodottoActionPerformed
         // TODO add your handling code here:
+        //box_qnt_vendi.removeAllItems();
+        estrai_qtprodotto();
+        vendi_totale.setText(calcolo_totale_vendi(Integer.parseInt(box_qnt_vendi.getSelectedItem().toString()))); 
         
     }//GEN-LAST:event_vendi_nome_prodottoActionPerformed
+
+    private void box_qnt_vendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_box_qnt_vendiActionPerformed
+        // TODO add your handling code here:
+        //String x = vendi_nome_prodotto.getSelectedItem().toString().substring(0, vendi_nome_prodotto.getSelectedItem().toString().indexOf("("));
+        String a = calcolo_totale_vendi(Integer.parseInt(box_qnt_vendi.getSelectedItem().toString()));
+        vendi_totale.setText(a);
+        //db.aggiorna_qtprodotto(x, Integer.parseInt(box_qnt_vendi.getSelectedItem().toString()));
+        //vendi_totale.setText(calcolo_totale_vendi(1));
+    }//GEN-LAST:event_box_qnt_vendiActionPerformed
 
     /**
      * @param args the command line arguments
@@ -749,6 +845,7 @@ public class NegozioForm extends javax.swing.JFrame {
     private javax.swing.JTextField acquista_quantita;
     private javax.swing.JButton acquista_storico;
     private javax.swing.JTextField acquista_totale;
+    private javax.swing.JComboBox<String> box_qnt_vendi;
     private javax.swing.JButton btn_agg;
     private javax.swing.JButton btn_nuovofornitore;
     private javax.swing.JTextField forn_cerca;
@@ -776,7 +873,6 @@ public class NegozioForm extends javax.swing.JFrame {
     private javax.swing.JButton vendi_aggiungi;
     private javax.swing.JButton vendi_button;
     private javax.swing.JComboBox<String> vendi_nome_prodotto;
-    private javax.swing.JTextField vendi_quantita;
     private javax.swing.JButton vendi_storico;
     private javax.swing.JTextField vendi_totale;
     // End of variables declaration//GEN-END:variables
