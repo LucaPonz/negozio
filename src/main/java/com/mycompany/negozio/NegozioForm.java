@@ -80,6 +80,7 @@ public class NegozioForm extends javax.swing.JFrame {
     }
 
     private void vendi_prodotto() {
+        vendi_nome_prodotto.removeAllItems();
         ResultSet rs = db.magazzino();
         try {
             while (rs.next()) {
@@ -650,22 +651,41 @@ public class NegozioForm extends javax.swing.JFrame {
     private void vendi_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_buttonActionPerformed
         // TODO add your handling code here:
         ArrayList<VendiP> vendita = new ArrayList<>();
-        String nome;
-        int quantita;
-        double prezzo, totale;
+        String nome  = "";
+        int quantita = 0;
+        double prezzo, totale_prodotto = 0;
+        String t = tot_car.getText().toString().substring(tot_car.getText().toString().indexOf(" "), tot_car.getText().toString().indexOf("€"));
+        double totale_vendita = Double.parseDouble(t);
         for (int i = 0; i < model_v.getRowCount(); i++) {
             nome = (String) table_vendi.getValueAt(i, 0);
             quantita =  (int) table_vendi.getValueAt(i, 1);
             prezzo =  (double) table_vendi.getValueAt(i, 2);
-            totale =  (double) table_vendi.getValueAt(i, 3);
-            vendita.add(new VendiP(nome,quantita,totale));
-            
+            totale_prodotto =  (double) table_vendi.getValueAt(i, 3); // Totale prodotto (unita * qnt)
+            System.out.println(nome + " " + quantita + " " + prezzo + " " + totale_prodotto);
+            vendita.add(new VendiP(nome,quantita,totale_prodotto));  
         }
         try {
-            VendiP.salva_vendite(vendita);
+            VendiP.salva_vendite(vendita, totale_vendita);
+            for(VendiP v : vendita){
+                db.carica_ProdottiVendite(v.nome, v.quantita, v.totale_prodotto);
+            }
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
+        model_v.getDataVector().removeAllElements();
+        model_v.fireTableDataChanged();
+        vendita = new ArrayList<VendiP>();
+        model_m.getDataVector().removeAllElements();
+        model_m.fireTableDataChanged();
+        vendi_prodotto();
+        estrai_qtprodotto();
+        try {
+            lista_magazzino();
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
     }//GEN-LAST:event_vendi_buttonActionPerformed
 
     private void mag_cercabarcodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mag_cercabarcodeActionPerformed

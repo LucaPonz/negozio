@@ -1,0 +1,20 @@
+Tab vendi
++ Tasto vendi
+    - Aggiorna magazzino
+    - Inserimento nella pivot
+    -  Pulire tab scontrino
+    - aggiornamento combo box
++ Tasto storico
+
+Tab acquisto
++ Combo box fornitori
++ Tasto storico
++ Tasto acquista
+    - Inserimento  tabella pivot
+
+Tab magazzino
++ Ricerca
++ Aggiungere stato prodotto
+
+Tab fornitori
++ Ricerca 
