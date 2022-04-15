@@ -21,7 +21,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class NegozioForm extends javax.swing.JFrame {
 
-    double tot = 0;
+    double tot = 0, tot_ac = 0;
     DefaultTableModel model_s, model_f, model_m, model_v;
     static DB db = new DB();
     ArrayList<Prodotto> scontrino = new ArrayList<>();
@@ -33,11 +33,12 @@ public class NegozioForm extends javax.swing.JFrame {
         initComponents();
         model_s = (DefaultTableModel) table_scontrino.getModel();
         model_v = (DefaultTableModel) table_vendi.getModel();
-        calcolo_totale();
+        //calcolo_totale();
         lista_fornitori();
         lista_magazzino();
         vendi_prodotto();
-        estrai_qtprodotto();
+        estrai_qtprodotto(); //Verifica errore iniziale
+        lista_fornitori_combo();
     }
 
     private void calcolo_totale() {
@@ -91,17 +92,33 @@ public class NegozioForm extends javax.swing.JFrame {
         }
     }
 
+    private void lista_fornitori_combo() {
+        ResultSet rs = db.fornitori();
+        try {
+            while (rs.next()) {
+                combo_acquista_fornitore.addItem(rs.getString("nome"));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     private void estrai_qtprodotto() {
         String nome = vendi_nome_prodotto.getSelectedItem().toString().substring(0, vendi_nome_prodotto.getSelectedItem().toString().indexOf("("));
-        int x = db.estrai_qtprodotto(nome);
-        box_qnt_vendi.removeAllItems();
-        if (x > 0) {
-            for (int i = 1; i < x + 1; i++) {
-                box_qnt_vendi.addItem("" + i);
+        if(nome.equals("")){    
+            int x = db.estrai_qtprodotto(nome);
+            box_qnt_vendi.removeAllItems();
+            if (x > 0) {
+                for (int i = 1; i < x + 1; i++) {
+                    box_qnt_vendi.addItem("" + i);
+                }
+            } else {
+                box_qnt_vendi.addItem("" + 0);
             }
         } else {
-            box_qnt_vendi.addItem("" + 0);
-        }
+                box_qnt_vendi.addItem("" + 0);
+            }
+        
 
     }
 
@@ -144,6 +161,7 @@ public class NegozioForm extends javax.swing.JFrame {
         vendi_nome_prodotto = new javax.swing.JComboBox<>();
         box_qnt_vendi = new javax.swing.JComboBox<>();
         tot_car = new javax.swing.JLabel();
+        btn_aggiorna_vendi = new javax.swing.JButton();
         Acquista = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -158,10 +176,11 @@ public class NegozioForm extends javax.swing.JFrame {
         table_scontrino = new javax.swing.JTable();
         acquista_button = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
-        acquista_fornitore = new javax.swing.JComboBox<>();
+        combo_acquista_fornitore = new javax.swing.JComboBox<>();
         acquista_storico = new javax.swing.JButton();
         jLabel12 = new javax.swing.JLabel();
         acquista_barcode = new javax.swing.JTextField();
+        tot_car_ac = new javax.swing.JLabel();
         Magazzino = new javax.swing.JPanel();
         mag_tabella = new javax.swing.JScrollPane();
         table_magazzino = new javax.swing.JTable();
@@ -249,6 +268,13 @@ public class NegozioForm extends javax.swing.JFrame {
         tot_car.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         tot_car.setText("Totale:      0€");
 
+        btn_aggiorna_vendi.setText("aggiorna");
+        btn_aggiorna_vendi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_aggiorna_vendiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout VendiLayout = new javax.swing.GroupLayout(Vendi);
         Vendi.setLayout(VendiLayout);
         VendiLayout.setHorizontalGroup(
@@ -274,14 +300,19 @@ public class NegozioForm extends javax.swing.JFrame {
                         .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(vendi_button, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(tot_car, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(vendi_storico))))
+                            .addGroup(VendiLayout.createSequentialGroup()
+                                .addComponent(btn_aggiorna_vendi)
+                                .addGap(113, 113, 113)
+                                .addComponent(vendi_storico)))))
                 .addGap(16, 16, 16))
         );
         VendiLayout.setVerticalGroup(
             VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(VendiLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(vendi_storico)
+                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(vendi_storico)
+                    .addComponent(btn_aggiorna_vendi))
                 .addGap(13, 13, 13)
                 .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(VendiLayout.createSequentialGroup()
@@ -304,7 +335,7 @@ public class NegozioForm extends javax.swing.JFrame {
                         .addComponent(vendi_aggiungi)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(vendi_button)
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         MainMenu.addTab("Vendi", Vendi);
@@ -316,6 +347,11 @@ public class NegozioForm extends javax.swing.JFrame {
         jLabel7.setText("Prezzo Unitario");
 
         acquista_prezzo.setText("0");
+        acquista_prezzo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                acquista_prezzoMouseClicked(evt);
+            }
+        });
         acquista_prezzo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 acquista_prezzoActionPerformed(evt);
@@ -333,7 +369,7 @@ public class NegozioForm extends javax.swing.JFrame {
         jLabel8.setText("Totale");
 
         acquista_totale.setEditable(false);
-        acquista_totale.setText("totale");
+        acquista_totale.setText("0");
 
         acquista_prodotto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -342,6 +378,11 @@ public class NegozioForm extends javax.swing.JFrame {
         });
 
         acquista_quantita.setText("0");
+        acquista_quantita.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                acquista_quantitaMouseClicked(evt);
+            }
+        });
         acquista_quantita.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 acquista_quantitaKeyReleased(evt);
@@ -371,6 +412,11 @@ public class NegozioForm extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        table_scontrino.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                table_scontrinoMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(table_scontrino);
 
         acquista_button.setText("Acquista");
@@ -382,7 +428,11 @@ public class NegozioForm extends javax.swing.JFrame {
 
         jLabel9.setText("Fornitore");
 
-        acquista_fornitore.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        combo_acquista_fornitore.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                combo_acquista_fornitoreActionPerformed(evt);
+            }
+        });
 
         acquista_storico.setText("Visualizza Storico Acquisti");
         acquista_storico.addActionListener(new java.awt.event.ActionListener() {
@@ -399,6 +449,9 @@ public class NegozioForm extends javax.swing.JFrame {
             }
         });
 
+        tot_car_ac.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        tot_car_ac.setText("Totale:      0€");
+
         javax.swing.GroupLayout AcquistaLayout = new javax.swing.GroupLayout(Acquista);
         Acquista.setLayout(AcquistaLayout);
         AcquistaLayout.setHorizontalGroup(
@@ -406,49 +459,52 @@ public class NegozioForm extends javax.swing.JFrame {
             .addGroup(AcquistaLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(acquista_prodotto, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                        .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(acquista_fornitore, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(acquista_totale, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(acquista_quantita)
-                        .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(acquista_prezzo)
-                        .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(acquista_barcode)
-                        .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(27, 27, 27)
-                .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(AcquistaLayout.createSequentialGroup()
-                        .addComponent(acquista_aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(56, 56, 56)
-                        .addComponent(acquista_button, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(acquista_storico))
-                .addContainerGap(126, Short.MAX_VALUE))
+                        .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(acquista_prodotto, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
+                                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(combo_acquista_fornitore, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(acquista_totale, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(acquista_quantita)
+                                .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(acquista_prezzo)
+                                .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(acquista_barcode)
+                                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(AcquistaLayout.createSequentialGroup()
+                                .addGap(0, 272, Short.MAX_VALUE)
+                                .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, AcquistaLayout.createSequentialGroup()
+                                        .addComponent(acquista_aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(acquista_button, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(acquista_storico, javax.swing.GroupLayout.Alignment.TRAILING)))
+                            .addComponent(jScrollPane1)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, AcquistaLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(tot_car_ac, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         AcquistaLayout.setVerticalGroup(
             AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(AcquistaLayout.createSequentialGroup()
-                .addGap(14, 14, 14)
-                .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(acquista_storico))
+                .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(AcquistaLayout.createSequentialGroup()
+                        .addGap(16, 16, 16)
+                        .addComponent(acquista_storico))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, AcquistaLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel9)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(AcquistaLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 286, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(20, 20, 20)
-                        .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(acquista_button)
-                            .addComponent(acquista_aggiungi))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(AcquistaLayout.createSequentialGroup()
-                        .addComponent(acquista_fornitore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(combo_acquista_fornitore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(12, 12, 12)
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -467,9 +523,16 @@ public class NegozioForm extends javax.swing.JFrame {
                         .addComponent(acquista_prezzo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(acquista_totale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(acquista_totale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tot_car_ac, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(AcquistaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(acquista_aggiungi)
+                    .addComponent(acquista_button))
+                .addGap(18, 18, 18))
         );
 
         MainMenu.addTab("Acquista", Acquista);
@@ -522,7 +585,7 @@ public class NegozioForm extends javax.swing.JFrame {
                     .addComponent(mag_cerca, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel10)
                     .addComponent(mag_cercabarcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(34, Short.MAX_VALUE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
         MainMenu.addTab("Magazzino", Magazzino);
@@ -637,36 +700,62 @@ public class NegozioForm extends javax.swing.JFrame {
 
     private void acquista_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acquista_buttonActionPerformed
         // TODO add your handling code here:
+        ArrayList<Acquisto> acquisto = new ArrayList<>();
+        String fornitore = combo_acquista_fornitore.getSelectedItem().toString();
+
+        String nome = "";
+        int quantita = 0;
+        String t = tot_car_ac.getText().toString().substring(tot_car_ac.getText().toString().indexOf(" "), tot_car_ac.getText().toString().indexOf("€"));
+        double prezzo, totale_prodotto = 0, tot = Double.parseDouble(t);
+        // Recupera tutti i dati della tabella
+        for (int i = 0; i < model_s.getRowCount(); i++) {
+            nome = (String) table_scontrino.getValueAt(i, 0);
+            quantita = (int) table_scontrino.getValueAt(i, 1);
+            prezzo = (double) table_scontrino.getValueAt(i, 2);
+            totale_prodotto = (double) table_scontrino.getValueAt(i, 3); // Totale prodotto (unita * qnt)
+            acquisto.add(new Acquisto(nome, quantita, prezzo, totale_prodotto));
+        }
         try {
             db.aggiungiProdotto(scontrino);
-
+            db.inserisci_acquisto(fornitore, tot);
+            for (Acquisto a : acquisto) {
+                db.inserisci_ac_prodotti(a.prodotto, a.quantita, a.prezzo_unita, a.totale_prodotto);
+            }
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         model_s.getDataVector().removeAllElements();
         model_s.fireTableDataChanged();
         scontrino.clear();
+        tot_car_ac.setText("Totale: 0€");
+        acquista_prodotto.setText("");
+        acquista_barcode.setText("");
+        acquista_quantita.setText("0");
+        acquista_prezzo.setText("0");
+        acquista_totale.setText("");
+        acquisto = new ArrayList<Acquisto>();
     }//GEN-LAST:event_acquista_buttonActionPerformed
+
 
     private void vendi_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_buttonActionPerformed
         // TODO add your handling code here:
         ArrayList<VendiP> vendita = new ArrayList<>();
-        String nome  = "";
+        String nome = "";
         int quantita = 0;
         double prezzo, totale_prodotto = 0;
         String t = tot_car.getText().toString().substring(tot_car.getText().toString().indexOf(" "), tot_car.getText().toString().indexOf("€"));
         double totale_vendita = Double.parseDouble(t);
         for (int i = 0; i < model_v.getRowCount(); i++) {
             nome = (String) table_vendi.getValueAt(i, 0);
-            quantita =  (int) table_vendi.getValueAt(i, 1);
-            prezzo =  (double) table_vendi.getValueAt(i, 2);
-            totale_prodotto =  (double) table_vendi.getValueAt(i, 3); // Totale prodotto (unita * qnt)
+            quantita = (int) table_vendi.getValueAt(i, 1);
+            prezzo = (double) table_vendi.getValueAt(i, 2);
+            totale_prodotto = (double) table_vendi.getValueAt(i, 3); // Totale prodotto (unita * qnt)
             System.out.println(nome + " " + quantita + " " + prezzo + " " + totale_prodotto);
-            vendita.add(new VendiP(nome,quantita,totale_prodotto));  
+            vendita.add(new VendiP(nome, quantita, totale_prodotto));
         }
         try {
             VendiP.salva_vendite(vendita, totale_vendita);
-            for(VendiP v : vendita){
+            for (VendiP v : vendita) {
                 db.carica_ProdottiVendite(v.nome, v.quantita, v.totale_prodotto);
             }
         } catch (SQLException ex) {
@@ -677,15 +766,15 @@ public class NegozioForm extends javax.swing.JFrame {
         vendita = new ArrayList<VendiP>();
         model_m.getDataVector().removeAllElements();
         model_m.fireTableDataChanged();
-        vendi_prodotto();
+
         estrai_qtprodotto();
         try {
             lista_magazzino();
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
+
+
     }//GEN-LAST:event_vendi_buttonActionPerformed
 
     private void mag_cercabarcodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mag_cercabarcodeActionPerformed
@@ -694,10 +783,67 @@ public class NegozioForm extends javax.swing.JFrame {
 
     private void acquista_storicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acquista_storicoActionPerformed
         // TODO add your handling code here:
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(StroicoAcquisti.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(StroicoAcquisti.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(StroicoAcquisti.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(StroicoAcquisti.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    new StroicoAcquisti().setVisible(true);
+                } catch (SQLException ex) {
+                    Logger.getLogger(StroicoAcquisti.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
     }//GEN-LAST:event_acquista_storicoActionPerformed
 
     private void vendi_storicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_storicoActionPerformed
         // TODO add your handling code here:
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(StoricoVendite.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(StoricoVendite.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(StoricoVendite.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(StoricoVendite.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    new StoricoVendite().setVisible(true);
+                } catch (SQLException ex) {
+                    Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
     }//GEN-LAST:event_vendi_storicoActionPerformed
 
     private void acquista_aggiungiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acquista_aggiungiActionPerformed
@@ -708,6 +854,8 @@ public class NegozioForm extends javax.swing.JFrame {
         double prezzo = Double.parseDouble(acquista_prezzo.getText());
         double totale = Double.parseDouble(acquista_totale.getText());
         scontrino.add(new Prodotto(nome, qnt, prezzo, totale, barcode));
+        tot_ac += totale;
+        tot_car_ac.setText("Totale: " + tot_ac + "€");
         model_s.insertRow(model_s.getRowCount(), new Object[]{nome, qnt, prezzo, totale});
     }//GEN-LAST:event_acquista_aggiungiActionPerformed
 
@@ -801,9 +949,9 @@ public class NegozioForm extends javax.swing.JFrame {
     }//GEN-LAST:event_vendi_aggiungiActionPerformed
 
     private void vendi_nome_prodottoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_nome_prodottoActionPerformed
-        // TODO add your handling code here:
-        //box_qnt_vendi.removeAllItems();
-        estrai_qtprodotto();
+//        // TODO add your handling code here:
+//        //box_qnt_vendi.removeAllItems();
+//       estrai_qtprodotto();
         vendi_unitario.setText(calcolo_totale_vendi(Integer.parseInt(box_qnt_vendi.getSelectedItem().toString())));
 
     }//GEN-LAST:event_vendi_nome_prodottoActionPerformed
@@ -826,6 +974,47 @@ public class NegozioForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Prodotto eliminato");
         }
     }//GEN-LAST:event_table_vendiMouseClicked
+
+    private void btn_aggiorna_vendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_aggiorna_vendiActionPerformed
+        // TODO add your handling code here:
+
+        vendi_nome_prodotto.removeAllItems();
+        try {
+            ResultSet rs = db.magazzino();
+            while (rs.next()) {
+                vendi_nome_prodotto.addItem(rs.getString("nome") + " (" + rs.getInt("quantita") + ")");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        estrai_qtprodotto();
+    }//GEN-LAST:event_btn_aggiorna_vendiActionPerformed
+
+    private void combo_acquista_fornitoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combo_acquista_fornitoreActionPerformed
+        // TODO add your handling code here:
+
+    }//GEN-LAST:event_combo_acquista_fornitoreActionPerformed
+
+    private void table_scontrinoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_scontrinoMouseClicked
+        // TODO add your handling code here:
+        if (table_scontrino.getSelectedRow() != -1) {
+            tot_ac = tot_ac - (double) table_scontrino.getValueAt(table_scontrino.getSelectedRow(), 3);
+            tot_car_ac.setText("Totale: " + tot_ac + "€");
+            // remove the selected row from the table model
+            model_s.removeRow(table_scontrino.getSelectedRow());
+            JOptionPane.showMessageDialog(null, "Prodotto eliminato");
+        }
+    }//GEN-LAST:event_table_scontrinoMouseClicked
+
+    private void acquista_quantitaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_acquista_quantitaMouseClicked
+        // TODO add your handling code here:
+        acquista_quantita.selectAll();
+    }//GEN-LAST:event_acquista_quantitaMouseClicked
+
+    private void acquista_prezzoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_acquista_prezzoMouseClicked
+        // TODO add your handling code here:
+        acquista_prezzo.selectAll();
+    }//GEN-LAST:event_acquista_prezzoMouseClicked
 
     /**
      * @param args the command line arguments
@@ -884,19 +1073,20 @@ public class NegozioForm extends javax.swing.JFrame {
     private javax.swing.JPanel Magazzino;
     private javax.swing.JTabbedPane MainMenu;
     private javax.swing.JPanel Vendi;
-    private javax.swing.JButton acquista_aggiungi;
-    private javax.swing.JTextField acquista_barcode;
-    private javax.swing.JButton acquista_button;
-    private javax.swing.JComboBox<String> acquista_fornitore;
-    private javax.swing.JTextField acquista_prezzo;
-    private javax.swing.JTextField acquista_prodotto;
-    private javax.swing.JTextField acquista_quantita;
-    private javax.swing.JButton acquista_storico;
-    private javax.swing.JTextField acquista_totale;
-    private static javax.swing.JComboBox<String> box_qnt_vendi;
-    private javax.swing.JButton btn_agg;
-    private javax.swing.JButton btn_nuovofornitore;
-    private javax.swing.JTextField forn_cerca;
+    public javax.swing.JButton acquista_aggiungi;
+    public javax.swing.JTextField acquista_barcode;
+    public javax.swing.JButton acquista_button;
+    public javax.swing.JTextField acquista_prezzo;
+    public javax.swing.JTextField acquista_prodotto;
+    public javax.swing.JTextField acquista_quantita;
+    public javax.swing.JButton acquista_storico;
+    public javax.swing.JTextField acquista_totale;
+    public static javax.swing.JComboBox<String> box_qnt_vendi;
+    public javax.swing.JButton btn_agg;
+    public javax.swing.JButton btn_aggiorna_vendi;
+    public javax.swing.JButton btn_nuovofornitore;
+    public javax.swing.JComboBox<String> combo_acquista_fornitore;
+    public javax.swing.JTextField forn_cerca;
     private javax.swing.JScrollPane forn_tabella;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -911,18 +1101,19 @@ public class NegozioForm extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField mag_cerca;
-    private javax.swing.JTextField mag_cercabarcode;
+    public javax.swing.JTextField mag_cerca;
+    public javax.swing.JTextField mag_cercabarcode;
     private javax.swing.JScrollPane mag_tabella;
-    private javax.swing.JTable table_fornitori;
-    private javax.swing.JTable table_magazzino;
-    private javax.swing.JTable table_scontrino;
-    private javax.swing.JTable table_vendi;
+    public javax.swing.JTable table_fornitori;
+    public javax.swing.JTable table_magazzino;
+    public javax.swing.JTable table_scontrino;
+    public javax.swing.JTable table_vendi;
     private javax.swing.JLabel tot_car;
-    private javax.swing.JButton vendi_aggiungi;
-    private javax.swing.JButton vendi_button;
-    private static javax.swing.JComboBox<String> vendi_nome_prodotto;
-    private javax.swing.JButton vendi_storico;
-    private static javax.swing.JTextField vendi_unitario;
+    private javax.swing.JLabel tot_car_ac;
+    public javax.swing.JButton vendi_aggiungi;
+    public javax.swing.JButton vendi_button;
+    public static javax.swing.JComboBox<String> vendi_nome_prodotto;
+    public javax.swing.JButton vendi_storico;
+    public static javax.swing.JTextField vendi_unitario;
     // End of variables declaration//GEN-END:variables
 }

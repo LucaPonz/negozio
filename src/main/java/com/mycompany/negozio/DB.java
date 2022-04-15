@@ -54,8 +54,7 @@ public class DB {
                 //this.aggiornaProdotto();
             } else {
                 try {
-                    //Michael P.
-
+                    //Inserimento nuovo prodotto
                     String query_add = "INSERT INTO prodotti SET nome = ?, quantita = ?, prezzo = ?, barcode = ?;";
                     PreparedStatement stmt = con.prepareStatement(query_add);
                     stmt.setString(1, s.nome);
@@ -67,20 +66,80 @@ public class DB {
                     } else {
                         System.out.println("Errore");
                     }
-
                 } catch (SQLException e) {
                     e.printStackTrace();
-                } finally {
-                    if (con != null) {
-                        try {
-                            con.close();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
                 }
             }
         }
+    }
+    public void inserisci_acquisto(String fornitore,  double totale){
+        int id = this.id_fornitore(fornitore);
+        Date data_ac = new Date();
+        String query_ins = "INSERT INTO acquisti SET data_acquisto = '" + formatter.format(data_ac) + "', id_fornitore = " + id + ", totale = " + totale + ";";
+        System.out.println(id);
+        System.out.println(data_ac);
+        System.out.println(query_ins);
+        try {
+            stm = con.createStatement();
+            if(stm.executeUpdate(query_ins) > 0) {
+                System.out.println("Acquisto inserito");
+            }else{
+                System.out.println("Acquisto non inserito");   
+            }
+        } catch (SQLException e) {
+        }
+    }
+    
+    //Caricamento tab pivot acquisti_prodotti
+    public void inserisci_ac_prodotti(String prodotto, int qnt_prodotto, double prezzou_prodotto, double totale_ac) throws SQLException{
+        ResultSet prod = cerca_prodotto(prodotto);
+        int id_prodotto = 0, lastid_ac = this.lastID_acquisti();
+        while(prod.next()){
+            id_prodotto = prod.getInt("id");
+        }
+        String query_inserisci = "INSERT INTO acquisti_prodotti SET id_prodotto = " + id_prodotto + ", id_acquisto = "+ lastid_ac + ", quantita_prodotto = ?, prezzo_prodotto = ?, totale_acquisto = ?;";
+         try {
+            PreparedStatement stmt = con.prepareStatement(query_inserisci);
+            stmt.setInt(1, qnt_prodotto);
+            stmt.setDouble(2, prezzou_prodotto);
+            stmt.setDouble(3, totale_ac);
+            if (stmt.executeUpdate() > 0) {
+                System.out.println("Inserito correttamente");
+            } else {
+                System.out.println("Errore");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } 
+    }
+    
+    //Funzione recupera ultimo ID acquisti
+    private int lastID_acquisti(){
+        int  lastid_ac = 0;
+        String query_lastIDac = "SELECT id FROM acquisti ORDER BY id DESC;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query_lastIDac);
+            if(rs.next()) {
+                lastid_ac = rs.getInt("id");
+            }
+        } catch (SQLException e) {
+        }
+        return  lastid_ac;
+    }
+    //Funzione recupero id fornitore
+    public int id_fornitore(String fornitore){
+        String query_fornitore = "SELECT id FROM fornitori WHERE nome = '" + fornitore + "';";
+        int id = 0;
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query_fornitore);
+            if(rs.next()) {
+                id = rs.getInt("id");
+            }
+        } catch (SQLException e) {
+        }
+        return id;
     }
 
     public int estrai_qtprodotto(String nome) {
@@ -115,15 +174,7 @@ public class DB {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        } 
     }
 
     public ResultSet fornitori() {
@@ -190,15 +241,7 @@ public class DB {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        } 
     }
 
     public void carica_ProdottiVendite(String nome, int quantita, double totale_prodotto) throws SQLException {
@@ -257,5 +300,76 @@ public class DB {
         }catch (SQLException e) {
                 e.printStackTrace();
         }
+    }
+    
+    public ResultSet storico_vendite(){
+        String query = "SELECT * FROM vendita;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+        } catch (SQLException e) {
+        }
+        return rs;
+    }
+    
+    public ResultSet storico_acquisti(){
+        String query = "SELECT a.id, a.data_acquisto, a.totale, f.nome FROM acquisti AS a INNER JOIN fornitori AS f ON a.id_fornitore = f.id;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+        } catch (SQLException e) {
+        }
+        return rs;
+    }
+    
+    public String dettaglio_vendita(int id){
+        String dettaglio = "";
+        ArrayList<Integer>  prodotto = new ArrayList<>();
+        ArrayList<Integer>  quantita = new ArrayList<>();
+        ArrayList<Double>  prezzo = new ArrayList<>();
+        ArrayList<String> nome = new ArrayList<>();
+        String query = "SELECT pv.id_prodotto, pv.quantita_prod, pv.totale_vendita, p.nome FROM prodotti_vendite AS pv INNER JOIN prodotti as p ON pv.id_prodotto = p.id WHERE pv.id_vendita = '" + id + "';";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            while(rs.next()){
+                nome.add(rs.getString("nome"));
+                prodotto.add(rs.getInt("id_prodotto"));
+                quantita.add(rs.getInt("quantita_prod"));
+                prezzo.add(rs.getDouble("totale_vendita"));
+            }
+           
+        } catch (SQLException e) {
+        } 
+        for(int i = 0; i<nome.size();i++){
+            dettaglio += "Prodotto: " + nome.get(i) + " - Pezzi: " + quantita.get(i) + " - Totale: " + prezzo.get(i) + ";\n";
+        }
+        
+        return dettaglio;
+    }
+    
+    public String dettaglio_acquisto(int id){
+        String dettaglio = "";
+        ArrayList<Integer>  prodotto = new ArrayList<>();
+        ArrayList<Integer>  quantita = new ArrayList<>();
+        ArrayList<Double>  prezzo = new ArrayList<>();
+        ArrayList<String> nome = new ArrayList<>();
+        String query = "SELECT p.nome, ac.quantita_prodotto, ac.totale_acquisto FROM acquisti_prodotti AS ac INNER JOIN prodotti as p ON ac.id_prodotto = p.id WHERE pv.id_vendita = '" + id + "';";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            while(rs.next()){
+                nome.add(rs.getString("nome"));
+                quantita.add(rs.getInt("quantita_prod"));
+                prezzo.add(rs.getDouble("totale_vendita"));
+            }
+           
+        } catch (SQLException e) {
+        } 
+        for(int i = 0; i<nome.size();i++){
+            dettaglio += "Prodotto: " + nome.get(i) + " - Pezzi: " + quantita.get(i) + " - Totale: " + prezzo.get(i) + ";\n";
+        }
+        
+        return dettaglio;
     }
 }
