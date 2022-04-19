@@ -18,3 +18,5 @@ Tab magazzino
 
 Tab fornitori
 + Ricerca 
+
+Da verificare aggiornamento tabella prodotti-fornitori

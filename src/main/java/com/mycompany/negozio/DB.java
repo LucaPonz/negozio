@@ -51,7 +51,7 @@ public class DB {
     public void aggiungiProdotto(ArrayList<Prodotto> scontrino) throws SQLException {
         for (Prodotto s : scontrino) {
             if (this.verifica_Prodotto(s.nome)) {
-                //this.aggiornaProdotto();
+                this.aggiornaProdotto(scontrino);
             } else {
                 try {
                     //Inserimento nuovo prodotto
@@ -71,6 +71,109 @@ public class DB {
                 }
             }
         }
+    }
+    public void aggiorna_prodotti_fornitori(String fornitore, String nome, double prezzo){
+        if (this.verifica_Prodotto(nome)) {
+                try {
+                    //Inserimento nuovo prodotto
+                    int id = 0, id_fornitore = 0;
+                    
+                    ResultSet rs2 = this.cerca_prodotto(nome);
+                    if(rs2.next()){
+                    id= rs2.getInt("id");
+                    }
+                    id_fornitore = id_fornitore(fornitore);
+                    String query = "INSERT INTO prodotti_fornitori SET id_prodotto=" +id+", id_fornitore="+id_fornitore+ ", prezzo_prodotto=?;";
+                    PreparedStatement stmt= con.prepareStatement(query);
+                    stmt.setDouble(1, prezzo);
+                    rs = stmt.executeQuery();
+                    
+                }
+                catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    int last_id = 0, id_fornitore = 0;
+                    
+                    last_id = this.last_id_prodotto();
+                    id_fornitore = id_fornitore(fornitore);
+                    String query = "INSERT INTO prodotti_fornitori SET id_prodotto=" +last_id+", id_fornitore="+id_fornitore+ ", prezzo_prodotto=?;";
+                    PreparedStatement stmt= con.prepareStatement(query);
+                    stmt.setDouble(1, prezzo);
+                    rs = stmt.executeQuery();
+                    
+                }
+                catch (SQLException e) {
+                    e.printStackTrace();
+                }
+        }
+    }
+    
+    public int last_id_prodotto(){
+        int last_id = 0;
+        String query = "SELECT id FROM prodotti ORDER BY id DESC";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            if(rs.next()) {
+                last_id = rs.getInt("id");
+            }
+        } catch (SQLException e) {
+        }
+        return  last_id;
+    }
+    
+    
+    
+    public double estrai_prezzo_prod(String nome) {
+        String query = "SELECT prezzo FROM prodotti WHERE nome = ?";
+        double prezzo = 0;
+        try {
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, nome);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                prezzo = Double.parseDouble(rs.getString("prezzo"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return prezzo;
+    }
+    
+    public void aggiornaProdotto(ArrayList<Prodotto> scon) throws SQLException{
+        int id = 0;
+        double prezzo = 0;
+        int qt = 0;
+        for (Prodotto s : scon) {
+            ResultSet rs = this.cerca_prodotto(s.nome);
+            if(rs.next()){
+                id= rs.getInt("id");
+            }
+            prezzo = estrai_prezzo_prod(s.nome);
+            qt = estrai_qtprodotto(s.nome) + s.quantita;
+            try {   
+                    //Inserimento nuovo prodotto
+                    
+                    String query_add = "UPDATE prodotti SET quantita = ?, prezzo = ? WHERE id ="+id+";";
+                    PreparedStatement stmt = con.prepareStatement(query_add);
+                    stmt.setInt(1, qt);
+                    if(prezzo > s.prezzo){
+                        stmt.setDouble(2, prezzo);
+                    }else{
+                        stmt.setDouble(2, s.prezzo);
+                    }
+                    if (stmt.executeUpdate() > 0) {
+                        System.out.println("Inserito correttamente");
+                    } else {
+                        System.out.println("Errore");
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+        }
+        
     }
     public void inserisci_acquisto(String fornitore,  double totale){
         int id = this.id_fornitore(fornitore);
@@ -401,11 +504,8 @@ public class DB {
         try {
             stm = con.createStatement();
             rs = stm.executeQuery(query);
-            
-           
         } catch (SQLException e) {
         } 
-            
         return rs;
     }
     
@@ -416,15 +516,12 @@ public class DB {
         ArrayList<String>  indirizzo   = new ArrayList<>();
         ArrayList<String> citta = new ArrayList<>();
         ArrayList<String> nazione = new ArrayList<>();
-         String query = "SELECT id, nome, p_iva, indirizzo, citta, nazione FROM prodotti WHERE barcode LIKE '" + c + "%';";
+         String query = "SELECT id, nome, p_iva, indirizzo, citta, nazione FROM fornitori WHERE nome LIKE '" + c + "%';";
         try {
             stm = con.createStatement();
             rs = stm.executeQuery(query);
-            
-           
         } catch (SQLException e) {
         } 
-            
         return rs;
     }
     

@@ -72,11 +72,7 @@
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="tot_car" min="-2" pref="113" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Component id="btn_aggiorna_vendi" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="113" max="-2" attributes="0"/>
-                                      <Component id="vendi_storico" min="-2" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="vendi_storico" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="vendi_button" alignment="1" min="-2" pref="96" max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -89,10 +85,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="vendi_storico" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="btn_aggiorna_vendi" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="vendi_storico" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
@@ -118,7 +111,7 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="vendi_button" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="40" max="32767" attributes="0"/>
+                      <EmptySpace pref="51" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -140,6 +133,9 @@
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="vendi_unitario">
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vendi_unitarioActionPerformed"/>
+              </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="9"/>
               </AuxValues>
@@ -246,6 +242,7 @@
               </Properties>
               <Events>
                 <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="vendi_nome_prodottoItemStateChanged"/>
+                <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="vendi_nome_prodottoMouseClicked"/>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vendi_nome_prodottoActionPerformed"/>
               </Events>
               <AuxValues>
@@ -275,17 +272,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Totale:      0&#x20ac;"/>
               </Properties>
-            </Component>
-            <Component class="javax.swing.JButton" name="btn_aggiorna_vendi">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="aggiorna"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btn_aggiorna_vendiActionPerformed"/>
-              </Events>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
-              </AuxValues>
             </Component>
           </SubComponents>
         </Container>

@@ -22,6 +22,8 @@ import javax.swing.table.DefaultTableModel;
 public class NegozioForm extends javax.swing.JFrame {
 
     boolean flag = false;
+    boolean v_flag = false;
+    boolean vendi = false;
     double tot = 0, tot_ac = 0;
     DefaultTableModel model_s, model_f, model_m, model_v;
     static DB db = new DB();
@@ -38,7 +40,7 @@ public class NegozioForm extends javax.swing.JFrame {
         lista_fornitori();
         lista_magazzino();
         vendi_prodotto();
-        estrai_qtprodotto(); //Verifica errore iniziale
+        //estrai_qtprodotto(); //Verifica errore iniziale
         lista_fornitori_combo();
         flag = true;
     }
@@ -141,8 +143,11 @@ public class NegozioForm extends javax.swing.JFrame {
         if (flag == true) {
             vendi_nome_prodotto.removeAllItems();
             vendi_nome_prodotto.addItem("Seleziona prodotto...");
+        } else if (v_flag == true){
+            vendi_nome_prodotto.removeAllItems();
+            v_flag = false;
+            vendi_prodotto();
         }
-        
         ResultSet rs = db.magazzino();
         try {
 
@@ -152,6 +157,7 @@ public class NegozioForm extends javax.swing.JFrame {
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
+        vendi = true;
     }
 
     private void lista_fornitori_combo() {
@@ -222,7 +228,6 @@ public class NegozioForm extends javax.swing.JFrame {
         vendi_nome_prodotto = new javax.swing.JComboBox<>();
         box_qnt_vendi = new javax.swing.JComboBox<>();
         tot_car = new javax.swing.JLabel();
-        btn_aggiorna_vendi = new javax.swing.JButton();
         Acquista = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -263,6 +268,12 @@ public class NegozioForm extends javax.swing.JFrame {
         jLabel2.setText("Quantità");
 
         jLabel4.setText("Prezzo Unitario");
+
+        vendi_unitario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vendi_unitarioActionPerformed(evt);
+            }
+        });
 
         table_vendi.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -319,6 +330,11 @@ public class NegozioForm extends javax.swing.JFrame {
                 vendi_nome_prodottoItemStateChanged(evt);
             }
         });
+        vendi_nome_prodotto.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                vendi_nome_prodottoMouseClicked(evt);
+            }
+        });
         vendi_nome_prodotto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 vendi_nome_prodottoActionPerformed(evt);
@@ -334,13 +350,6 @@ public class NegozioForm extends javax.swing.JFrame {
 
         tot_car.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         tot_car.setText("Totale:      0€");
-
-        btn_aggiorna_vendi.setText("aggiorna");
-        btn_aggiorna_vendi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_aggiorna_vendiActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout VendiLayout = new javax.swing.GroupLayout(Vendi);
         Vendi.setLayout(VendiLayout);
@@ -366,10 +375,7 @@ public class NegozioForm extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(tot_car, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(VendiLayout.createSequentialGroup()
-                                .addComponent(btn_aggiorna_vendi)
-                                .addGap(113, 113, 113)
-                                .addComponent(vendi_storico))
+                            .addComponent(vendi_storico)
                             .addComponent(vendi_button, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(16, 16, 16))
         );
@@ -377,9 +383,7 @@ public class NegozioForm extends javax.swing.JFrame {
             VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(VendiLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(vendi_storico)
-                    .addComponent(btn_aggiorna_vendi))
+                .addComponent(vendi_storico)
                 .addGap(13, 13, 13)
                 .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(VendiLayout.createSequentialGroup()
@@ -402,7 +406,7 @@ public class NegozioForm extends javax.swing.JFrame {
                         .addComponent(vendi_aggiungi)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(vendi_button)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
 
         MainMenu.addTab("Vendi", Vendi);
@@ -812,6 +816,7 @@ public class NegozioForm extends javax.swing.JFrame {
             db.inserisci_acquisto(fornitore, tot);
             for (Acquisto a : acquisto) {
                 db.inserisci_ac_prodotti(a.prodotto, a.quantita, a.prezzo_unita, a.totale_prodotto);
+                db.aggiorna_prodotti_fornitori(fornitore, a.prodotto, a.prezzo_unita ); 
             }
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -865,9 +870,13 @@ public class NegozioForm extends javax.swing.JFrame {
         vendita = new ArrayList<VendiP>();
         model_m.getDataVector().removeAllElements();
         model_m.fireTableDataChanged();
-
+        box_qnt_vendi.removeAllItems();
+        box_qnt_vendi.addItem(""+0);
+        vendi_unitario.setText("0");
+        v_flag = true;
         estrai_qtprodotto();
         try {
+            vendi_prodotto();
             lista_magazzino();
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -1062,14 +1071,15 @@ public class NegozioForm extends javax.swing.JFrame {
     }//GEN-LAST:event_vendi_aggiungiActionPerformed
 
     private void vendi_nome_prodottoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_nome_prodottoActionPerformed
-        // TODO add your handling code here:
-        estrai_qtprodotto();
-        vendi_unitario.setText(calcolo_totale_vendi(Integer.parseInt(box_qnt_vendi.getSelectedItem().toString())));
-
+        if(vendi == true) {
+            estrai_qtprodotto();
+            vendi_unitario.setText(calcolo_totale_vendi(Integer.parseInt(box_qnt_vendi.getSelectedItem().toString())));
+            vendi = false;
+            }
     }//GEN-LAST:event_vendi_nome_prodottoActionPerformed
 
     private void box_qnt_vendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_box_qnt_vendiActionPerformed
-
+            
     }//GEN-LAST:event_box_qnt_vendiActionPerformed
 
     private void table_vendiMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_vendiMouseEntered
@@ -1086,12 +1096,6 @@ public class NegozioForm extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Prodotto eliminato");
         }
     }//GEN-LAST:event_table_vendiMouseClicked
-
-    private void btn_aggiorna_vendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_aggiorna_vendiActionPerformed
-        // TODO add your handling code here:
-        vendi_prodotto();
-        estrai_qtprodotto();
-    }//GEN-LAST:event_btn_aggiorna_vendiActionPerformed
 
     private void combo_acquista_fornitoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combo_acquista_fornitoreActionPerformed
         // TODO add your handling code here:
@@ -1121,6 +1125,10 @@ public class NegozioForm extends javax.swing.JFrame {
 
     private void vendi_nome_prodottoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_vendi_nome_prodottoItemStateChanged
         // TODO add your handling code here:
+        // TODO add your handling code here:
+        
+        
+
     }//GEN-LAST:event_vendi_nome_prodottoItemStateChanged
 
     private void mag_cercaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mag_cercaKeyReleased
@@ -1160,6 +1168,15 @@ public class NegozioForm extends javax.swing.JFrame {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_mag_cercabarcodeKeyReleased
+
+    private void vendi_unitarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_unitarioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_vendi_unitarioActionPerformed
+
+    private void vendi_nome_prodottoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_vendi_nome_prodottoMouseClicked
+        // TODO add your handling code here:
+        vendi = true;
+    }//GEN-LAST:event_vendi_nome_prodottoMouseClicked
 
     /**
      * @param args the command line arguments
@@ -1228,7 +1245,6 @@ public class NegozioForm extends javax.swing.JFrame {
     public javax.swing.JTextField acquista_totale;
     public static javax.swing.JComboBox<String> box_qnt_vendi;
     public javax.swing.JButton btn_agg;
-    public javax.swing.JButton btn_aggiorna_vendi;
     public javax.swing.JButton btn_nuovofornitore;
     public javax.swing.JComboBox<String> combo_acquista_fornitore;
     public javax.swing.JTextField forn_cerca;
