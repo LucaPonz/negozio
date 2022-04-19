@@ -354,14 +354,14 @@ public class DB {
         ArrayList<Integer>  quantita = new ArrayList<>();
         ArrayList<Double>  prezzo = new ArrayList<>();
         ArrayList<String> nome = new ArrayList<>();
-        String query = "SELECT p.nome, ac.quantita_prodotto, ac.totale_acquisto FROM acquisti_prodotti AS ac INNER JOIN prodotti as p ON ac.id_prodotto = p.id WHERE pv.id_vendita = '" + id + "';";
+        String query = "SELECT p.nome, ac.quantita_prodotto, ac.totale_acquisto FROM acquisti_prodotti AS ac INNER JOIN prodotti as p ON ac.id_prodotto = p.id WHERE ac.id_acquisto = '" + id + "';";
         try {
             stm = con.createStatement();
             rs = stm.executeQuery(query);
             while(rs.next()){
                 nome.add(rs.getString("nome"));
-                quantita.add(rs.getInt("quantita_prod"));
-                prezzo.add(rs.getDouble("totale_vendita"));
+                quantita.add(rs.getInt("quantita_prodotto"));
+                prezzo.add(rs.getDouble("totale_acquisto"));
             }
            
         } catch (SQLException e) {
@@ -372,4 +372,61 @@ public class DB {
         
         return dettaglio;
     }
+    
+    public ResultSet cerca_prodotto_lettera(String c){
+        ArrayList<Integer>  id = new ArrayList<>();
+        ArrayList<String>  nome = new ArrayList<>();
+        ArrayList<Integer>  quantita = new ArrayList<>();
+        ArrayList<Double>  prezzo = new ArrayList<>();
+        ArrayList<String> barcode = new ArrayList<>();
+         String query = "SELECT id, nome, quantita, prezzo, barcode FROM prodotti WHERE nome LIKE '" + c + "%';";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            
+           
+        } catch (SQLException e) {
+        } 
+            
+        return rs;
+    }
+    
+    public ResultSet cerca_prodotto_barcode(String c){
+        ArrayList<Integer>  id = new ArrayList<>();
+        ArrayList<String>  nome = new ArrayList<>();
+        ArrayList<Integer>  quantita = new ArrayList<>();
+        ArrayList<Double>  prezzo = new ArrayList<>();
+        ArrayList<String> barcode = new ArrayList<>();
+         String query = "SELECT id, nome, quantita, prezzo, barcode FROM prodotti WHERE barcode LIKE '" + c + "%';";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            
+           
+        } catch (SQLException e) {
+        } 
+            
+        return rs;
+    }
+    
+    public ResultSet cerca_fornitore(String c){
+        ArrayList<Integer>  id = new ArrayList<>();
+        ArrayList<String>  nome = new ArrayList<>();
+        ArrayList<String>  p_iva = new ArrayList<>();
+        ArrayList<String>  indirizzo   = new ArrayList<>();
+        ArrayList<String> citta = new ArrayList<>();
+        ArrayList<String> nazione = new ArrayList<>();
+         String query = "SELECT id, nome, p_iva, indirizzo, citta, nazione FROM prodotti WHERE barcode LIKE '" + c + "%';";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            
+           
+        } catch (SQLException e) {
+        } 
+            
+        return rs;
+    }
+    
+    
 }

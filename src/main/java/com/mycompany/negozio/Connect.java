@@ -16,7 +16,7 @@ public class Connect {
 	
 	private  final String URL = "jdbc:mysql://localhost/negozio";
 	private  final String USER = "root";
-	private  final String PASSWORD = "root";
+	private  final String PASSWORD = "password";
 	private  final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 	
 	

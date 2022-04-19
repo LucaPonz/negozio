@@ -55,14 +55,33 @@ public class NegozioForm extends javax.swing.JFrame {
     private void lista_fornitori() throws SQLException {
         model_f = (DefaultTableModel) table_fornitori.getModel();
         ResultSet rs = db.fornitori();
-        String nome = "", piva = "", indirizzo = "", citta = "", nazione = "";
+        String id= "", nome = "", piva = "", indirizzo = "", citta = "", nazione = "";
         while (rs.next()) {
+            id = "" + rs.getInt("id");
             nome = rs.getString("nome");
             piva = rs.getString("p_iva");
             indirizzo = rs.getString("indirizzo");
             citta = rs.getString("citta");
             nazione = rs.getString("nazione");
-            String riga[] = {nome, piva, indirizzo, citta, nazione};
+            String riga[] = {id,nome, piva, indirizzo, citta, nazione};
+            model_f.addRow(riga);
+        }
+    }
+    
+    private void lista_forn_cerca(String c) throws SQLException {
+        model_f = (DefaultTableModel) table_fornitori.getModel();
+        model_f.getDataVector().removeAllElements();
+        model_f.fireTableDataChanged();
+        ResultSet rs = db.cerca_fornitore(c);
+        String id= "", nome = "", piva = "", indirizzo = "", citta = "", nazione = "";
+        while (rs.next()) {
+            id = "" + rs.getInt("id");
+            nome = rs.getString("nome");
+            piva = rs.getString("p_iva");
+            indirizzo = rs.getString("indirizzo");
+            citta = rs.getString("citta");
+            nazione = rs.getString("nazione");
+            String riga[] = {id,nome, piva, indirizzo, citta, nazione};
             model_f.addRow(riga);
         }
     }
@@ -70,6 +89,42 @@ public class NegozioForm extends javax.swing.JFrame {
     private void lista_magazzino() throws SQLException {
         model_m = (DefaultTableModel) table_magazzino.getModel();
         ResultSet rs = db.magazzino();
+        String id = "", nome = "", qnt = "", prezzo = "", barcode = "";
+        while (rs.next()) {
+            id = "" + rs.getInt("id");
+            nome = rs.getString("nome");
+            qnt = "" + rs.getInt("quantita");
+            prezzo = "" + rs.getDouble("prezzo");
+            barcode = rs.getString("barcode");
+            String riga[] = {id, nome, qnt, prezzo, barcode};
+            model_m.addRow(riga);
+        }
+    }
+    
+    private void lista_mag_cerca(String c) throws SQLException {
+        
+        model_m = (DefaultTableModel) table_magazzino.getModel();
+        model_m.getDataVector().removeAllElements();
+        model_m.fireTableDataChanged();
+        ResultSet rs = db.cerca_prodotto_lettera(c);
+        String id = "", nome = "", qnt = "", prezzo = "", barcode = "";
+        while (rs.next()) {
+            id = "" + rs.getInt("id");
+            nome = rs.getString("nome");
+            qnt = "" + rs.getInt("quantita");
+            prezzo = "" + rs.getDouble("prezzo");
+            barcode = rs.getString("barcode");
+            String riga[] = {id, nome, qnt, prezzo, barcode};
+            model_m.addRow(riga);
+            }
+    }
+    
+    private void lista_mag_cerca_barcode(String c) throws SQLException {
+        
+        model_m = (DefaultTableModel) table_magazzino.getModel();
+        model_m.getDataVector().removeAllElements();
+        model_m.fireTableDataChanged();
+        ResultSet rs = db.cerca_prodotto_barcode(c);
         String id = "", nome = "", qnt = "", prezzo = "", barcode = "";
         while (rs.next()) {
             id = "" + rs.getInt("id");
@@ -292,34 +347,30 @@ public class NegozioForm extends javax.swing.JFrame {
         VendiLayout.setHorizontalGroup(
             VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(VendiLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(VendiLayout.createSequentialGroup()
-                                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(vendi_nome_prodotto, 0, 200, Short.MAX_VALUE)
-                                    .addComponent(vendi_unitario)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
-                                        .addComponent(vendi_aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(33, 33, 33))
-                                    .addComponent(box_qnt_vendi, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(18, 39, Short.MAX_VALUE)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 397, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(VendiLayout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(tot_car, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(VendiLayout.createSequentialGroup()
-                                        .addComponent(btn_aggiorna_vendi)
-                                        .addGap(113, 113, 113)
-                                        .addComponent(vendi_storico))))))
+                        .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(vendi_nome_prodotto, 0, 200, Short.MAX_VALUE)
+                            .addComponent(vendi_unitario)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
+                                .addComponent(vendi_aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(33, 33, 33))
+                            .addComponent(box_qnt_vendi, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 39, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 397, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(VendiLayout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(vendi_button, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(tot_car, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(VendiLayout.createSequentialGroup()
+                                .addComponent(btn_aggiorna_vendi)
+                                .addGap(113, 113, 113)
+                                .addComponent(vendi_storico))
+                            .addComponent(vendi_button, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(16, 16, 16))
         );
         VendiLayout.setVerticalGroup(
@@ -564,13 +615,38 @@ public class NegozioForm extends javax.swing.JFrame {
         mag_tabella.setViewportView(table_magazzino);
 
         mag_cerca.setText("Cerca nome");
+        mag_cerca.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                mag_cercaMouseClicked(evt);
+            }
+        });
+        mag_cerca.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                mag_cercaKeyPressed(evt);
+            }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                mag_cercaKeyReleased(evt);
+            }
+        });
 
         jLabel10.setText("Cerca Prodotto");
 
         mag_cercabarcode.setText("Cerca barcode");
+        mag_cercabarcode.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                mag_cercabarcodeInputMethodTextChanged(evt);
+            }
+        });
         mag_cercabarcode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mag_cercabarcodeActionPerformed(evt);
+            }
+        });
+        mag_cercabarcode.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                mag_cercabarcodeKeyReleased(evt);
             }
         });
 
@@ -611,11 +687,11 @@ public class NegozioForm extends javax.swing.JFrame {
 
             },
             new String [] {
-                "id", "nome", "indirizzo", "città", "nazione"
+                "id", "nome", "p.iva", "indirizzo", "città", "nazione"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, true, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -930,11 +1006,19 @@ public class NegozioForm extends javax.swing.JFrame {
 
     private void btn_nuovofornitoreComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_btn_nuovofornitoreComponentShown
         // TODO add your handling code here:
+        
     }//GEN-LAST:event_btn_nuovofornitoreComponentShown
 
     //Campo ricerca
     private void forn_cercaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_forn_cercaKeyReleased
         // TODO add your handling code here:
+        String cerca = forn_cerca.getText();
+        try {
+            lista_forn_cerca(cerca);
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_forn_cercaKeyReleased
 
     private void btn_aggActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_aggActionPerformed
@@ -1038,6 +1122,44 @@ public class NegozioForm extends javax.swing.JFrame {
     private void vendi_nome_prodottoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_vendi_nome_prodottoItemStateChanged
         // TODO add your handling code here:
     }//GEN-LAST:event_vendi_nome_prodottoItemStateChanged
+
+    private void mag_cercaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mag_cercaKeyReleased
+        // TODO add your handling code here:
+        
+        String cerca = mag_cerca.getText();
+        
+        
+        try {
+            lista_mag_cerca(cerca);
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_mag_cercaKeyReleased
+
+    private void mag_cercaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mag_cercaMouseClicked
+        // TODO add your handling code here:
+        mag_cerca.selectAll();
+    }//GEN-LAST:event_mag_cercaMouseClicked
+
+    private void mag_cercaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mag_cercaKeyPressed
+      
+    }//GEN-LAST:event_mag_cercaKeyPressed
+
+    private void mag_cercabarcodeInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_mag_cercabarcodeInputMethodTextChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mag_cercabarcodeInputMethodTextChanged
+
+    private void mag_cercabarcodeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mag_cercabarcodeKeyReleased
+        // TODO add your handling code here:
+        String cerca = mag_cercabarcode.getText();
+        try {
+            lista_mag_cerca_barcode(cerca);
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_mag_cercabarcodeKeyReleased
 
     /**
      * @param args the command line arguments
