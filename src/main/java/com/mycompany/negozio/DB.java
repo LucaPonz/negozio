@@ -567,24 +567,160 @@ public class DB {
         }
     }
 
+    public double calcolo_guadagno(String nome, int quantita, double totalevendita_prodotto) {
+        int lastid_ac = this.lastID_acquisti();
+        double vend_unita = totalevendita_prodotto / quantita, prezzoac = 0, guadagno = 0;
+        String query_prezzoac = "SELECT ac.prezzo_prodotto FROM negozio.acquisti_prodotti AS ac INNER JOIN prodotti AS p ON p.id = ac.id_prodotto INNER JOIN acquisti AS a ON a.id = ac.id_acquisto WHERE p.nome = '" + nome + "' AND a.id = "+ lastid_ac + " ORDER BY prezzo_prodotto DESC;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query_prezzoac);
+            if(rs.next()){
+                prezzoac = rs.getDouble("ac.prezzo_prodotto");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            guadagno = vend_unita - prezzoac;
+            return guadagno;
+        }
+    }
+
     //Funzioni per statitstiche
     public int vendite_mese(String prodotto) {
         LocalDate oggi = LocalDate.now();
         int mese = oggi.getMonthValue();
         int anno = oggi.getYear();
         int conta = 0;
-        String query = "SELECT COUNT(pv.id_vendita),p.id FROM prodotti_vendite as pv\n"
-                + "INNER JOIN prodotti as p on p.id = pv.id_prodotto\n"
-                + "INNER JOIN vendita as v ON v.id = pv.id_vendita\n"
-                + "where p.nome = '" + prodotto + "' and v.data > '2022/04/01';";
+        String query = "SELECT COUNT(pv.id_vendita),p.id FROM prodotti_vendite as pv INNER JOIN prodotti as p on p.id = pv.id_prodotto INNER JOIN vendita as v ON v.id = pv.id_vendita where p.nome = '" + prodotto + "' and v.data > '" + anno + "/" + mese + "/01';";
         try {
             stm = con.createStatement();
             rs = stm.executeQuery(query);
+            if (rs.next()) {
+                conta = rs.getInt("COUNT(pv.id_vendita)");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
             return conta;
         }
     }
+
+    public int vendite_trime(String prodotto) {
+        LocalDate oggi = LocalDate.now();
+        int mese_att = oggi.getMonthValue();
+        int mese = mese_att - 3;
+        int anno = oggi.getYear();
+        int conta = 0;
+        String query = "SELECT COUNT(pv.id_vendita),p.id FROM prodotti_vendite as pv INNER JOIN prodotti as p on p.id = pv.id_prodotto INNER JOIN vendita as v ON v.id = pv.id_vendita where p.nome = '" + prodotto + "' and v.data > '" + anno + "/" + mese + "/01';";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            if (rs.next()) {
+                conta = rs.getInt("COUNT(pv.id_vendita)");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return conta;
+        }
+    }
+
+    public int vendite_anno(String prodotto) {
+        LocalDate oggi = LocalDate.now();
+        int mese = oggi.getMonthValue();
+        int anno = oggi.getYear();
+        int conta = 0;
+        String query = "SELECT COUNT(pv.id_vendita),p.id FROM prodotti_vendite as pv\n"
+                + "INNER JOIN prodotti as p on p.id = pv.id_prodotto \n"
+                + "INNER JOIN vendita as v ON v.id = pv.id_vendita \n"
+                + "where p.nome = '" + prodotto + "' and v.data LIKE \"2022%\";";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            if (rs.next()) {
+                conta = rs.getInt("COUNT(pv.id_vendita)");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return conta;
+        }
+    }
+
+    public ResultSet piuvenduto() {
+        String query = "SELECT COUNT(id_prodotto), id_prodotto, p.nome FROM prodotti_vendite AS pv INNER JOIN prodotti as p ON pv.id_prodotto = p.id GROUP BY id_prodotto ORDER BY  COUNT(id_prodotto) DESC;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return rs;
+        }
+    }
+
+    public ResultSet maggior_guadagno() {
+        String query = "SELECT p.nome, (sum(pv.totale_vendita) - sum(ap.totale_acquisto)) AS G FROM negozio.acquisti_prodotti AS ap\n"
+                + "INNER JOIN prodotti_vendite AS pv ON pv.id_prodotto = ap.id_prodotto\n"
+                + "INNER JOIN prodotti AS p ON p.id = ap.id_prodotto\n"
+                + "GROUP BY ap.id_prodotto ORDER BY  G DESC;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return rs;
+        }
+    }
+
+    public ResultSet fornitore_piu_usato() {
+        String query = "SELECT f.nome, COUNT(a.id_fornitore) FROM acquisti as a\n"
+                + "INNER JOIN fornitori AS f ON f.id = a.id_fornitore\n"
+                + "group by f.nome ORDER BY COUNT(a.id_fornitore) DESC;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return rs;
+        }
+    }
+
+    public ResultSet last_prezzo_prodotto(String prodotto) {
+        String query = "SELECT ap.prezzo_prodotto FROM acquisti_prodotti as ap\n"
+                + "INNER JOIN prodotti AS p ON p.id = ap.id_prodotto\n"
+                + "WHERE p.nome = '" + prodotto + "'"
+                + "ORDER BY ap.id DESC;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return rs;
+        }
+    }
+
+    public int guadagno_prodotto(String prodotto) {
+        int guadagno = 0;
+        String query = "SELECT p.nome, (sum(pv.totale_vendita) - sum(ap.totale_acquisto)) AS guadagno FROM negozio.acquisti_prodotti AS ap\n"
+                + "INNER JOIN prodotti_vendite AS pv ON pv.id_prodotto = ap.id_prodotto\n"
+                + "INNER JOIN prodotti AS p ON p.id = ap.id_prodotto\n"
+                + "WHERE p.nome = '" + prodotto + "'"
+                + "GROUP BY ap.id_prodotto ORDER BY guadagno DESC;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            if (rs.next()) {
+                guadagno = rs.getInt("guadagno");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return guadagno;
+        }
+    }
+
 }
-//" + anno + "/" + mese + "
