@@ -1,6 +1,8 @@
 package com.mycompany.negozio;
 
 import com.mycompany.negozio.Connect;
+import static com.mycompany.negozio.NegozioForm.db;
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -583,6 +585,24 @@ public class DB {
             guadagno = vend_unita - prezzoac;
             return guadagno;
         }
+    }
+    //Funzioni statistiche vendita
+    public ArrayList<String[]> stat_vendite(ArrayList<VendiP> vendita) {
+        ArrayList<String[]> righe = new ArrayList<>();
+        
+        for (VendiP v : vendita) {
+            String nome = v.nome;
+            String prezzo_unita = "" +  this.estrai_prezzo_prod(nome);
+            int qnt = v.quantita;
+            double prezzo = v.totale_prodotto;
+            String prezzo_unita_vendita = "" + (prezzo / qnt);
+            double tot_guadagno = Double.parseDouble(prezzo_unita_vendita) - Double.parseDouble(prezzo_unita);
+            String tot_guadagno_txt = "" + tot_guadagno;
+            String[] riga = {nome, prezzo_unita, prezzo_unita_vendita, tot_guadagno_txt};
+            righe.add(riga);
+        }
+        return righe;
+       
     }
 
     //Funzioni per statitstiche

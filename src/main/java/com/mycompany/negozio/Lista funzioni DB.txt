@@ -1,0 +1,45 @@
+public boolean verifica_Prodotto(String nome) {
+public void aggiungiProdotto(ArrayList<Prodotto> scontrino) throws SQLException 
+public void aggiorna_prodotti_fornitori(String fornitore, String nome, double prezzo) {
+public int last_id_prodotto() {
+public double estrai_prezzo_prod(String nome) {
+public void aggiornaProdotto(ArrayList<Prodotto> scon) throws SQLException {
+public void inserisci_acquisto(String fornitore, double totale) {
+//Caricamento tab pivot acquisti_prodotti
+public void inserisci_ac_prodotti(String prodotto, int qnt_prodotto, double prezzou_prodotto, double totale_ac) throws SQLException {
+//Funzione recupera ultimo ID acquisti
+private int lastID_acquisti() {
+//Funzione recupero id fornitore
+public int id_fornitore(String fornitore) {
+public int estrai_qtprodotto(String nome) {
+public void nuovo_fornitore(String nome, String piva, String indirizzo, String citta, String nazione) {
+public ResultSet fornitori() {
+public ResultSet magazzino() {
+public ResultSet cerca_prodotto(String nome) {
+public boolean verifica_qt(int qnt, String nome) throws SQLException {
+//VENDITE
+public void carica_Vendite(Date data, double totale_vendita) throws SQLException {
+public void carica_ProdottiVendite(String nome, int quantita, double totale_prodotto) throws SQLException {
+public void aggiorna_qtProdotto(String nome, int quantita) {
+public ResultSet storico_vendite() {
+public String dettaglio_vendita(int id) {
+public String dettaglio_acquisto(int id) {
+public ResultSet cerca_prodotto_lettera(String c) {
+public ResultSet cerca_prodotto_barcode(String c) { 
+public ResultSet cerca_fornitore(String c) {
+public int id_prodotto(String nome) {
+public ResultSet statistiche_fornitori(String prodotto) {
+public double calcolo_guadagno(String nome, int quantita, double totalevendita_prodotto) {
+//Funzioni statistiche vendita
+public ArrayList<String[]> stat_vendite(ArrayList<VendiP> vendita)
+//Funzioni per statitstiche
+public int vendite_mese(String prodotto) {
+public int vendite_trime(String prodotto) {
+public int vendite_anno(String prodotto) {
+public ResultSet piuvenduto() {
+public ResultSet maggior_guadagno() {
+public ResultSet fornitore_piu_usato() {
+public ResultSet last_prezzo_prodotto(String prodotto) {
+public int guadagno_prodotto(String prodotto) {
+  
+

@@ -16,13 +16,14 @@ import java.util.Date;
 public class VendiP {
     static DB db = new DB();
     public String nome;
-    public int quantita;
+    public int quantita, percentuale;
     SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
     Date data = new Date(System.currentTimeMillis());
     public double totale_prodotto;
-    VendiP(String nome, int quantita, double totale_prodotto){
+    VendiP(String nome, int quantita, int percentuale, double totale_prodotto){
         this.nome = nome;
         this.quantita = quantita;
+        this.percentuale = percentuale;
         this.totale_prodotto = totale_prodotto;
     }
     
