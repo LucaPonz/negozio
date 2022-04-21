@@ -22,7 +22,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class NegozioForm extends javax.swing.JFrame {
 
-    boolean flag = false, v_flag = false, vendi = false;
+    boolean flag = false, v_flag = false, vendi = false, s_flag = false, flag_verifica = true;
     double tot = 0, tot_ac = 0;
     DefaultTableModel model_s, model_f, model_m, model_v;
     static DB db = new DB();
@@ -46,6 +46,7 @@ public class NegozioForm extends javax.swing.JFrame {
         maggior_guadagno();
         fornitore_piuusato();
         flag = true;
+        flag_verifica = false;
     }
 
     private void calcolo_totale() {
@@ -57,7 +58,7 @@ public class NegozioForm extends javax.swing.JFrame {
         acquista_totale.setText(tot);
     }
 
-    private void lista_fornitori() throws SQLException {
+    public void lista_fornitori() throws SQLException {
         model_f = (DefaultTableModel) table_fornitori.getModel();
         ResultSet rs = db.fornitori();
         String id = "", nome = "", piva = "", indirizzo = "", citta = "", nazione = "";
@@ -143,17 +144,9 @@ public class NegozioForm extends javax.swing.JFrame {
     }
 
     private void vendi_prodotto() {
-        if (flag == true) {
-            vendi_nome_prodotto.removeAllItems();
-            vendi_nome_prodotto.addItem("Seleziona prodotto...");
-        } else if (v_flag == true) {
-            vendi_nome_prodotto.removeAllItems();
-            v_flag = false;
-            vendi_prodotto();
-        }
+        vendi_nome_prodotto.removeAllItems();
         ResultSet rs = db.magazzino();
         try {
-
             while (rs.next()) {
                 vendi_nome_prodotto.addItem(rs.getString("nome") + " (" + rs.getInt("quantita") + ")");
             }
@@ -161,9 +154,11 @@ public class NegozioForm extends javax.swing.JFrame {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         vendi = true;
+
     }
 
     private void lista_fornitori_combo() {
+        combo_acquista_fornitore.removeAllItems();
         ResultSet rs = db.fornitori();
         try {
             while (rs.next()) {
@@ -240,7 +235,8 @@ public class NegozioForm extends javax.swing.JFrame {
         ResultSet rs = db.statistiche_fornitori(prodotto);
         try {
             while (rs.next()) {
-                stat_fornitore.addItem(rs.getString("nome"));
+                System.out.println("Ciao");
+                statisitiche_fornitore.addItem(rs.getString("nome"));
             }
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
@@ -324,21 +320,6 @@ public class NegozioForm extends javax.swing.JFrame {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         MainMenu = new javax.swing.JTabbedPane();
-        Vendi = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        vendi_unitario = new javax.swing.JTextField();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        table_vendi = new javax.swing.JTable();
-        vendi_button = new javax.swing.JButton();
-        vendi_aggiungi = new javax.swing.JButton();
-        vendi_storico = new javax.swing.JButton();
-        vendi_nome_prodotto = new javax.swing.JComboBox<>();
-        box_qnt_vendi = new javax.swing.JComboBox<>();
-        tot_car = new javax.swing.JLabel();
-        jLabel22 = new javax.swing.JLabel();
-        percentuale_guadagno = new javax.swing.JComboBox<>();
         Acquista = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -358,6 +339,21 @@ public class NegozioForm extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
         acquista_barcode = new javax.swing.JTextField();
         tot_car_ac = new javax.swing.JLabel();
+        Vendi = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        vendi_unitario = new javax.swing.JTextField();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        table_vendi = new javax.swing.JTable();
+        vendi_button = new javax.swing.JButton();
+        vendi_aggiungi = new javax.swing.JButton();
+        vendi_storico = new javax.swing.JButton();
+        vendi_nome_prodotto = new javax.swing.JComboBox<>();
+        box_qnt_vendi = new javax.swing.JComboBox<>();
+        tot_car = new javax.swing.JLabel();
+        jLabel22 = new javax.swing.JLabel();
+        percentuale_guadagno = new javax.swing.JComboBox<>();
         Magazzino = new javax.swing.JPanel();
         mag_tabella = new javax.swing.JScrollPane();
         table_magazzino = new javax.swing.JTable();
@@ -371,7 +367,7 @@ public class NegozioForm extends javax.swing.JFrame {
         jLabel11 = new javax.swing.JLabel();
         btn_nuovofornitore = new javax.swing.JButton();
         btn_agg = new javax.swing.JButton();
-        prodotto_piu_venduto = new javax.swing.JPanel();
+        Statistiche = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         piu_venduto = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
@@ -382,7 +378,7 @@ public class NegozioForm extends javax.swing.JFrame {
         jLabel16 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         jLabel18 = new javax.swing.JLabel();
-        stat_fornitore = new javax.swing.JComboBox<>();
+        statisitiche_fornitore = new javax.swing.JComboBox<>();
         vendite_periodo = new javax.swing.JLabel();
         prezzo_ultimo_ac = new javax.swing.JLabel();
         guadagno_tot = new javax.swing.JLabel();
@@ -398,171 +394,11 @@ public class NegozioForm extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jLabel1.setText("Prodotto");
-
-        jLabel2.setText("Quantità");
-
-        jLabel4.setText("Prezzo Unitario");
-
-        vendi_unitario.setEditable(false);
-        vendi_unitario.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                vendi_unitarioActionPerformed(evt);
+        Acquista.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                AcquistaComponentShown(evt);
             }
         });
-
-        table_vendi.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Prodotto", "Quantità", "Prezzo", "Guadagno", "Totale"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        table_vendi.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                table_vendiMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                table_vendiMouseEntered(evt);
-            }
-        });
-        jScrollPane2.setViewportView(table_vendi);
-
-        vendi_button.setText("Vendi");
-        vendi_button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                vendi_buttonActionPerformed(evt);
-            }
-        });
-
-        vendi_aggiungi.setText("Aggiungi");
-        vendi_aggiungi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                vendi_aggiungiActionPerformed(evt);
-            }
-        });
-
-        vendi_storico.setText("Visualizza Storico Vendite");
-        vendi_storico.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                vendi_storicoActionPerformed(evt);
-            }
-        });
-
-        vendi_nome_prodotto.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        vendi_nome_prodotto.setMaximumRowCount(10);
-        vendi_nome_prodotto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleziona prodotto..." }));
-        vendi_nome_prodotto.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                vendi_nome_prodottoItemStateChanged(evt);
-            }
-        });
-        vendi_nome_prodotto.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                vendi_nome_prodottoMouseClicked(evt);
-            }
-        });
-        vendi_nome_prodotto.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                vendi_nome_prodottoActionPerformed(evt);
-            }
-        });
-
-        box_qnt_vendi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0" }));
-        box_qnt_vendi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                box_qnt_vendiActionPerformed(evt);
-            }
-        });
-
-        tot_car.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        tot_car.setText("Totale:      0€");
-
-        jLabel22.setText("Percentuale guadagno");
-
-        percentuale_guadagno.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleziona l'incremento prezzo...", "0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%", "50%", "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%", "100%" }));
-
-        javax.swing.GroupLayout VendiLayout = new javax.swing.GroupLayout(Vendi);
-        Vendi.setLayout(VendiLayout);
-        VendiLayout.setHorizontalGroup(
-            VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
-                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(VendiLayout.createSequentialGroup()
-                        .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(VendiLayout.createSequentialGroup()
-                                .addGap(44, 44, 44)
-                                .addComponent(vendi_aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(56, 56, 56))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(vendi_nome_prodotto, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(vendi_unitario)
-                                    .addComponent(box_qnt_vendi, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(percentuale_guadagno, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))
-                    .addGroup(VendiLayout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(vendi_storico)
-                            .addComponent(vendi_button, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(16, 16, 16))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(tot_car, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        VendiLayout.setVerticalGroup(
-            VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(VendiLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(vendi_storico)
-                .addGap(13, 13, 13)
-                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(VendiLayout.createSequentialGroup()
-                        .addGap(32, 32, 32)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(vendi_nome_prodotto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(17, 17, 17)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(box_qnt_vendi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(12, 12, 12)
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(vendi_unitario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel22)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(percentuale_guadagno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(28, 28, 28)
-                        .addComponent(vendi_aggiungi)
-                        .addGap(0, 34, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tot_car, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(vendi_button)
-                .addGap(33, 33, 33))
-        );
-
-        MainMenu.addTab("Vendi", Vendi);
 
         jLabel5.setText("Nome Prodotto");
 
@@ -758,6 +594,178 @@ public class NegozioForm extends javax.swing.JFrame {
 
         MainMenu.addTab("Acquista", Acquista);
 
+        Vendi.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                VendiComponentShown(evt);
+            }
+        });
+
+        jLabel1.setText("Prodotto");
+
+        jLabel2.setText("Quantità");
+
+        jLabel4.setText("Prezzo Unitario");
+
+        vendi_unitario.setEditable(false);
+        vendi_unitario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vendi_unitarioActionPerformed(evt);
+            }
+        });
+
+        table_vendi.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Prodotto", "Quantità", "Prezzo", "Guadagno", "Totale"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        table_vendi.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                table_vendiMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                table_vendiMouseEntered(evt);
+            }
+        });
+        jScrollPane2.setViewportView(table_vendi);
+
+        vendi_button.setText("Vendi");
+        vendi_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vendi_buttonActionPerformed(evt);
+            }
+        });
+
+        vendi_aggiungi.setText("Aggiungi");
+        vendi_aggiungi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vendi_aggiungiActionPerformed(evt);
+            }
+        });
+
+        vendi_storico.setText("Visualizza Storico Vendite");
+        vendi_storico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vendi_storicoActionPerformed(evt);
+            }
+        });
+
+        vendi_nome_prodotto.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        vendi_nome_prodotto.setMaximumRowCount(10);
+        vendi_nome_prodotto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleziona prodotto..." }));
+        vendi_nome_prodotto.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                vendi_nome_prodottoItemStateChanged(evt);
+            }
+        });
+        vendi_nome_prodotto.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                vendi_nome_prodottoMouseClicked(evt);
+            }
+        });
+        vendi_nome_prodotto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                vendi_nome_prodottoActionPerformed(evt);
+            }
+        });
+
+        box_qnt_vendi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0" }));
+        box_qnt_vendi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                box_qnt_vendiActionPerformed(evt);
+            }
+        });
+
+        tot_car.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        tot_car.setText("Totale:      0€");
+
+        jLabel22.setText("Percentuale guadagno");
+
+        percentuale_guadagno.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleziona l'incremento prezzo...", "0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%", "50%", "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%", "100%" }));
+
+        javax.swing.GroupLayout VendiLayout = new javax.swing.GroupLayout(Vendi);
+        Vendi.setLayout(VendiLayout);
+        VendiLayout.setHorizontalGroup(
+            VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
+                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(VendiLayout.createSequentialGroup()
+                        .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(VendiLayout.createSequentialGroup()
+                                .addGap(44, 44, 44)
+                                .addComponent(vendi_aggiungi, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(56, 56, 56))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(vendi_nome_prodotto, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(vendi_unitario)
+                                    .addComponent(box_qnt_vendi, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(percentuale_guadagno, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))
+                    .addGroup(VendiLayout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(vendi_storico)
+                            .addComponent(vendi_button, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(16, 16, 16))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, VendiLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(tot_car, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        VendiLayout.setVerticalGroup(
+            VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(VendiLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(vendi_storico)
+                .addGap(13, 13, 13)
+                .addGroup(VendiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(VendiLayout.createSequentialGroup()
+                        .addGap(32, 32, 32)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(vendi_nome_prodotto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(17, 17, 17)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(box_qnt_vendi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(12, 12, 12)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(vendi_unitario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel22)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(percentuale_guadagno, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(28, 28, 28)
+                        .addComponent(vendi_aggiungi)
+                        .addGap(0, 34, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tot_car, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(vendi_button)
+                .addGap(33, 33, 33))
+        );
+
+        MainMenu.addTab("Vendi", Vendi);
+
         table_magazzino.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -921,6 +929,12 @@ public class NegozioForm extends javax.swing.JFrame {
 
         MainMenu.addTab("Fornitori", Fornitori);
 
+        Statistiche.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                StatisticheComponentShown(evt);
+            }
+        });
+
         jLabel3.setText("Prodotto più venduto:");
 
         piu_venduto.setText("vend");
@@ -930,12 +944,15 @@ public class NegozioForm extends javax.swing.JFrame {
 
         jLabel13.setText("Fornitore più usato:");
 
-        fornitore_usato.setText("jLabel15");
-
         jLabel15.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabel15.setText("Statistiche prodotti");
 
         stat_prodotto.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleziona un prodotto..." }));
+        stat_prodotto.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                stat_prodottoItemStateChanged(evt);
+            }
+        });
         stat_prodotto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 stat_prodottoActionPerformed(evt);
@@ -948,23 +965,13 @@ public class NegozioForm extends javax.swing.JFrame {
 
         jLabel18.setText("Guadagno totale:");
 
-        stat_fornitore.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Fornitori..." }));
-
-        vendite_periodo.setText("jLabel19");
-
-        prezzo_ultimo_ac.setText("jLabel20");
-
-        guadagno_tot.setText("jLabel21");
+        statisitiche_fornitore.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Fornitori..." }));
 
         jLabel19.setText("Numero vedite:");
 
         jLabel20.setText("Prodotto:");
 
-        prod_mguadagno.setText("jLabel21");
-
         jLabel21.setText("Guadagno:");
-
-        guadagno_max.setText("jLabel22");
 
         periodo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Ultimo Mese", "Trimestrale", "Annuale" }));
         periodo.addActionListener(new java.awt.event.ActionListener() {
@@ -973,81 +980,81 @@ public class NegozioForm extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout prodotto_piu_vendutoLayout = new javax.swing.GroupLayout(prodotto_piu_venduto);
-        prodotto_piu_venduto.setLayout(prodotto_piu_vendutoLayout);
-        prodotto_piu_vendutoLayout.setHorizontalGroup(
-            prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
+        javax.swing.GroupLayout StatisticheLayout = new javax.swing.GroupLayout(Statistiche);
+        Statistiche.setLayout(StatisticheLayout);
+        StatisticheLayout.setHorizontalGroup(
+            StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(StatisticheLayout.createSequentialGroup()
                 .addGap(15, 15, 15)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
-                        .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(StatisticheLayout.createSequentialGroup()
+                        .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
+                        .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(StatisticheLayout.createSequentialGroup()
                                 .addComponent(piu_venduto, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(72, 72, 72)
                                 .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
+                            .addGroup(StatisticheLayout.createSequentialGroup()
                                 .addComponent(fornitore_usato, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGap(177, 177, 177)))
                         .addComponent(numero_piuvenduto, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(85, 85, 85))
-                    .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
-                        .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
+                    .addGroup(StatisticheLayout.createSequentialGroup()
+                        .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(StatisticheLayout.createSequentialGroup()
                                 .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(guadagno_max, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
+                            .addGroup(StatisticheLayout.createSequentialGroup()
                                 .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(prod_mguadagno, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
-                        .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(StatisticheLayout.createSequentialGroup()
+                        .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, prodotto_piu_vendutoLayout.createSequentialGroup()
-                                    .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, prodotto_piu_vendutoLayout.createSequentialGroup()
-                                            .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, StatisticheLayout.createSequentialGroup()
+                                    .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, StatisticheLayout.createSequentialGroup()
+                                            .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                                 .addComponent(jLabel18, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(jLabel17, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE))
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                 .addComponent(prezzo_ultimo_ac, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(guadagno_tot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, prodotto_piu_vendutoLayout.createSequentialGroup()
+                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, StatisticheLayout.createSequentialGroup()
                                             .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                             .addComponent(vendite_periodo, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(periodo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, prodotto_piu_vendutoLayout.createSequentialGroup()
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, StatisticheLayout.createSequentialGroup()
                                     .addComponent(stat_prodotto, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGap(18, 18, 18)
-                                    .addComponent(stat_fornitore, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(statisitiche_fornitore, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
             .addComponent(jSeparator2)
             .addComponent(jSeparator1)
         );
-        prodotto_piu_vendutoLayout.setVerticalGroup(
-            prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(prodotto_piu_vendutoLayout.createSequentialGroup()
+        StatisticheLayout.setVerticalGroup(
+            StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(StatisticheLayout.createSequentialGroup()
                 .addGap(27, 27, 27)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel3)
                         .addComponent(numero_piuvenduto)
                         .addComponent(piu_venduto, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel19))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel13)
                     .addComponent(fornitore_usato))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
@@ -1055,11 +1062,11 @@ public class NegozioForm extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel14)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel20)
                     .addComponent(prod_mguadagno))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel21)
                     .addComponent(guadagno_max))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1067,32 +1074,35 @@ public class NegozioForm extends javax.swing.JFrame {
                 .addGap(3, 3, 3)
                 .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(stat_prodotto, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(stat_fornitore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(statisitiche_fornitore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel16)
                     .addComponent(vendite_periodo)
                     .addComponent(periodo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17)
                     .addComponent(prezzo_ultimo_ac))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(prodotto_piu_vendutoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(StatisticheLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel18)
                     .addComponent(guadagno_tot))
                 .addGap(99, 99, 99))
         );
 
-        MainMenu.addTab("Statistiche", prodotto_piu_venduto);
+        MainMenu.addTab("Statistiche", Statistiche);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(MainMenu, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(MainMenu)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1143,8 +1153,13 @@ public class NegozioForm extends javax.swing.JFrame {
         model_s.fireTableDataChanged();
         model_m.getDataVector().removeAllElements();
         model_m.fireTableDataChanged();
+        v_flag = true;
+        //vendi_nome_prodotto.removeAllItems();
+
         try {
+
             lista_magazzino();
+            vendi_prodotto();
             stat_prodotto();
             prodotto_piu_venduto();
             maggior_guadagno();
@@ -1160,6 +1175,7 @@ public class NegozioForm extends javax.swing.JFrame {
         acquista_prezzo.setText("0");
         acquista_totale.setText("");
         acquisto = new ArrayList<Acquisto>();
+
     }//GEN-LAST:event_acquista_buttonActionPerformed
 
 
@@ -1186,12 +1202,11 @@ public class NegozioForm extends javax.swing.JFrame {
             VendiP.salva_vendite(vendita, totale_vendita);
             for (VendiP v : vendita) {
                 db.carica_ProdottiVendite(v.nome, v.quantita, v.totale_prodotto);
-                System.out.println(db.calcolo_guadagno(v.nome, v.quantita, v.totale_prodotto));
             }
         } catch (SQLException ex) {
             Logger.getLogger(NegozioForm.class.getName()).log(Level.SEVERE, null, ex);
         }
-      /* Create and display the form */
+        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 Stat_vendite sv = new Stat_vendite();
@@ -1207,9 +1222,13 @@ public class NegozioForm extends javax.swing.JFrame {
         box_qnt_vendi.removeAllItems();
         box_qnt_vendi.addItem("" + 0);
         vendi_unitario.setText("0");
+        percentuale_guadagno.setSelectedIndex(0);
+        tot_car.setText("Totale " + 0 + "€");
         v_flag = true;
+
         estrai_qtprodotto();
         try {
+            vendi_nome_prodotto.removeAllItems();
             vendi_prodotto();
             lista_magazzino();
             stat_prodotto();
@@ -1227,7 +1246,7 @@ public class NegozioForm extends javax.swing.JFrame {
 
     private void acquista_storicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acquista_storicoActionPerformed
         // TODO add your handling code here:
-        
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -1242,7 +1261,7 @@ public class NegozioForm extends javax.swing.JFrame {
 
     private void vendi_storicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_storicoActionPerformed
         // TODO add your handling code here:
-        
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -1288,7 +1307,7 @@ public class NegozioForm extends javax.swing.JFrame {
 
     private void btn_nuovofornitoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_nuovofornitoreActionPerformed
         // TODO add your handling code here:
-        
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -1360,11 +1379,11 @@ public class NegozioForm extends javax.swing.JFrame {
     }//GEN-LAST:event_vendi_aggiungiActionPerformed
 
     private void vendi_nome_prodottoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vendi_nome_prodottoActionPerformed
-        if (vendi == true) {
-            estrai_qtprodotto();
-            vendi_unitario.setText(calcolo_vendi_unita(Integer.parseInt(box_qnt_vendi.getSelectedItem().toString())));
-            vendi = false;
-        }
+//        if (vendi == true) {
+//            estrai_qtprodotto();
+//            vendi_unitario.setText(calcolo_vendi_unita(Integer.parseInt(box_qnt_vendi.getSelectedItem().toString())));
+//            vendi = false;
+//        }
     }//GEN-LAST:event_vendi_nome_prodottoActionPerformed
 
     private void box_qnt_vendiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_box_qnt_vendiActionPerformed
@@ -1378,7 +1397,7 @@ public class NegozioForm extends javax.swing.JFrame {
     private void table_vendiMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_table_vendiMouseClicked
         // TODO add your handling code here:
         if (table_vendi.getSelectedRow() != -1) {
-            tot = tot - (double) table_vendi.getValueAt(table_vendi.getSelectedRow(), 3);
+            tot = tot - (double) table_vendi.getValueAt(table_vendi.getSelectedRow(), 4);
             tot_car.setText("Totale: " + tot + "€");
             // remove the selected row from the table model
             model_v.removeRow(table_vendi.getSelectedRow());
@@ -1400,6 +1419,7 @@ public class NegozioForm extends javax.swing.JFrame {
             model_s.removeRow(table_scontrino.getSelectedRow());
             JOptionPane.showMessageDialog(null, "Prodotto eliminato");
         }
+
     }//GEN-LAST:event_table_scontrinoMouseClicked
 
     private void acquista_quantitaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_acquista_quantitaMouseClicked
@@ -1413,7 +1433,10 @@ public class NegozioForm extends javax.swing.JFrame {
     }//GEN-LAST:event_acquista_prezzoMouseClicked
 
     private void vendi_nome_prodottoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_vendi_nome_prodottoItemStateChanged
-
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            estrai_qtprodotto();
+            vendi_unitario.setText(calcolo_vendi_unita(Integer.parseInt(box_qnt_vendi.getSelectedItem().toString())));
+        }
     }//GEN-LAST:event_vendi_nome_prodottoItemStateChanged
 
     private void mag_cercaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mag_cercaKeyReleased
@@ -1464,7 +1487,7 @@ public class NegozioForm extends javax.swing.JFrame {
         // TODO add your handling code here:
         String prodotto = stat_prodotto.getSelectedItem().toString();
         String tempo = periodo.getSelectedItem().toString();
-        stat_fornitore.removeAllItems();
+        statisitiche_fornitore.removeAllItems();
         stat_fornitore(prodotto);
         vendite_prodotto(prodotto, tempo);
         ultimo_prezzo(prodotto);
@@ -1477,6 +1500,24 @@ public class NegozioForm extends javax.swing.JFrame {
         String prodotto = stat_prodotto.getSelectedItem().toString();
         vendite_prodotto(prodotto, tempo);
     }//GEN-LAST:event_periodoActionPerformed
+
+    private void AcquistaComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_AcquistaComponentShown
+        // TODO add your handling code here:
+        lista_fornitori_combo();
+    }//GEN-LAST:event_AcquistaComponentShown
+
+    private void VendiComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_VendiComponentShown
+
+    }//GEN-LAST:event_VendiComponentShown
+
+    private void StatisticheComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_StatisticheComponentShown
+        // TODO add your handling code here:
+    }//GEN-LAST:event_StatisticheComponentShown
+
+    private void stat_prodottoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_stat_prodottoItemStateChanged
+        // TODO add your handling code here:
+
+    }//GEN-LAST:event_stat_prodottoItemStateChanged
 
     /**
      * @param args the command line arguments
@@ -1534,6 +1575,7 @@ public class NegozioForm extends javax.swing.JFrame {
     private javax.swing.JPanel Fornitori;
     private javax.swing.JPanel Magazzino;
     private javax.swing.JTabbedPane MainMenu;
+    private javax.swing.JPanel Statistiche;
     private javax.swing.JPanel Vendi;
     public javax.swing.JButton acquista_aggiungi;
     public javax.swing.JTextField acquista_barcode;
@@ -1588,9 +1630,8 @@ public class NegozioForm extends javax.swing.JFrame {
     private javax.swing.JLabel piu_venduto;
     private javax.swing.JLabel prezzo_ultimo_ac;
     private javax.swing.JLabel prod_mguadagno;
-    private javax.swing.JPanel prodotto_piu_venduto;
-    private javax.swing.JComboBox<String> stat_fornitore;
     private javax.swing.JComboBox<String> stat_prodotto;
+    private javax.swing.JComboBox<String> statisitiche_fornitore;
     public javax.swing.JTable table_fornitori;
     public javax.swing.JTable table_magazzino;
     public javax.swing.JTable table_scontrino;

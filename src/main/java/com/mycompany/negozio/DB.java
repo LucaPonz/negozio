@@ -558,7 +558,7 @@ public class DB {
 
     public ResultSet statistiche_fornitori(String prodotto) {
         int id_p = id_prodotto(prodotto);
-        String query = "SELECT DISTINCT nome FROM fornitori INNER JOIN prodotti_fornitori AS pf ON id_prodotto = " + id_p + " WHERE id = pf.id_fornitore;";
+        String query = "SELECT DISTINCT nome FROM fornitori as f INNER JOIN prodotti_fornitori AS pf ON id_prodotto = " + id_p + " WHERE f.id = pf.id_fornitore;";
         try {
             stm = con.createStatement();
             rs = stm.executeQuery(query);

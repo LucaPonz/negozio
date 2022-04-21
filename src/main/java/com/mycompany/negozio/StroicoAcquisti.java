@@ -74,11 +74,11 @@ public class StroicoAcquisti extends javax.swing.JFrame {
 
             },
             new String [] {
-                "#", "Data", "Totale"
+                "#", "Data", "Fornitore", "Totale"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {

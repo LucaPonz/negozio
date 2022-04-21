@@ -5,6 +5,7 @@
 package com.mycompany.negozio;
 
 import java.awt.event.WindowEvent;
+import java.sql.SQLException;
 
 /**
  *
@@ -12,13 +13,15 @@ import java.awt.event.WindowEvent;
  */
 public class Nuovo_fornitore extends javax.swing.JFrame {
     DB db = new DB();
+    NegozioForm nf;
     /**
      * Creates new form Nuovo_fornitore
      */
     public Nuovo_fornitore() {
         initComponents();
     }
-
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
