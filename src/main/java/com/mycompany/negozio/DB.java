@@ -757,5 +757,45 @@ public class DB {
         }
         return rs;
     }
+    
+    public double totaleVenditeMese(int i) {
+        double incasso = 0;
+        String query = "SELECT SUM(totale_vendita) AS g FROM prodotti_vendite AS pv\n" +
+                        "INNER JOIN vendita AS v ON v.id = pv.id_vendita\n" +
+                        "WHERE month(data) = "+i+";";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            while(rs.next()){
+                incasso = rs.getDouble("g");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return incasso;
+        }
+    }
+    
+    public double totaleGuadagniMese(int i) {
+        double guadagno = 0;
+        String query = "SELECT SUM(pv.totale_vendita) - (ap.prezzo_prodotto * SUM(pv.quantita_prod)) as g, p.nome FROM prodotti_vendite as pv\n" +
+                        "INNER JOIN prodotti as p ON p.id = pv.id_prodotto\n" +
+                        "INNER JOIN acquisti_prodotti as ap ON p.id = ap.id_prodotto\n" +
+                        "INNER JOIN vendita as v ON v.id = pv.id_vendita\n" +
+                        "WHERE month(v.data) = "+i+" AND ap.id_prodotto = pv.id_prodotto\n" +
+                        "GROUP BY p.nome";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            while(rs.next()){
+                guadagno = guadagno + rs.getDouble("g");
+                System.out.println(guadagno);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            return guadagno;
+        }
+    }
 
 }
