@@ -742,5 +742,20 @@ public class DB {
             return guadagno;
         }
     }
+    
+    public ResultSet PieChartData() {
+        
+        String query = "SELECT id_prodotto, nome,  SUM(quantita_prod) AS qt FROM prodotti_vendite AS pv\n" +
+                       "INNER JOIN prodotti AS p ON pv.id_prodotto = p.id\n" +
+                       "GROUP BY id_prodotto\n" +
+                       "ORDER BY qt DESC;";
+        try {
+            stm = con.createStatement();
+            rs = stm.executeQuery(query);
+            
+        } catch (SQLException e) {
+        }
+        return rs;
+    }
 
 }
